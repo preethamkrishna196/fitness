@@ -50,23 +50,23 @@ def display_gym_workouts():
     
     gym_exercises = {
         "Chest": [
-            {"name": "Push-ups", "img": "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b", "vid": "https://www.youtube.com/watch?v=IODxDxX7oi4"},
-            {"name": "Bench Press", "img": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48", "vid": "https://www.youtube.com/watch?v=rT7DgCr-3pg"},
+            {"name": "Push-ups", "img": "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800", "vid": "https://www.youtube.com/watch?v=IODxDxX7oi4"},
+            {"name": "Bench Press", "img": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800", "vid": "https://www.youtube.com/watch?v=rT7DgCr-3pg"},
         ],
         "Back": [
-            {"name": "Pull-ups", "img": "https://images.unsplash.com/photo-1598971639058-211a74a96aea", "vid": "https://www.youtube.com/watch?v=eGo4IYlbE5g"},
-            {"name": "Lat Pulldown", "img": "https://images.unsplash.com/photo-1605296867304-6f2a41a42262", "vid": "https://www.youtube.com/watch?v=CAwf7n6Luuc"},
+            {"name": "Pull-ups", "img": "https://images.unsplash.com/photo-1598971639058-211a74a96aea?w=800", "vid": "https://www.youtube.com/watch?v=eGo4IYlbE5g"},
+            {"name": "Lat Pulldown", "img": "https://images.unsplash.com/photo-1605296867304-6f2a41a42262?w=800", "vid": "https://www.youtube.com/watch?v=CAwf7n6Luuc"},
         ],
         "Shoulders": [
-            {"name": "Shoulder Press", "img": "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5", "vid": "https://www.youtube.com/watch?v=qEwKCR5JCog"},
+            {"name": "Shoulder Press", "img": "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=800", "vid": "https://www.youtube.com/watch?v=qEwKCR5JCog"},
         ],
         "Arms": [
-            {"name": "Bicep Curls", "img": "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e", "vid": "https://www.youtube.com/watch?v=ykJmrZ5v0Oo"},
-            {"name": "Tricep Dips", "img": "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61", "vid": "https://www.youtube.com/watch?v=6kALZikXxLc"},
+            {"name": "Bicep Curls", "img": "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=800", "vid": "https://www.youtube.com/watch?v=ykJmrZ5v0Oo"},
+            {"name": "Tricep Dips", "img": "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=800", "vid": "https://www.youtube.com/watch?v=6kALZikXxLc"},
         ],
         "Legs": [
-            {"name": "Squats", "img": "https://images.unsplash.com/photo-1574680096141-1cddd32e04ca", "vid": "https://www.youtube.com/watch?v=YaXPRqUwItQ"},
-            {"name": "Lunges", "img": "https://images.unsplash.com/photo-1434608519344-49d77a699ded", "vid": "https://www.youtube.com/watch?v=QOVaHwm-Q6U"},
+            {"name": "Squats", "img": "https://images.unsplash.com/photo-1574680096141-1cddd32e04ca?w=800", "vid": "https://www.youtube.com/watch?v=YaXPRqUwItQ"},
+            {"name": "Lunges", "img": "https://images.unsplash.com/photo-1434608519344-49d77a699ded?w=800", "vid": "https://www.youtube.com/watch?v=QOVaHwm-Q6U"},
         ]
     }
 
@@ -84,14 +84,14 @@ def display_yoga_asanas():
     st.subheader("Beginner Friendly Yoga Asanas")
     
     yoga_asanas = [
-        {"name": "Sun Salutations (Surya Namaskar)", "img": "https://images.unsplash.com/photo-1506126613408-eca07ce68773", "vid": "https://www.youtube.com/watch?v=6IUyY9Dyr5w"},
-        {"name": "Chair Pose (Utkatasana)", "img": "https://images.unsplash.com/photo-1523476843875-43c2cb89aa85", "vid": "https://www.youtube.com/shorts/_GIKyB_n1TA"},
-        {"name": "Warrior I & II (Virabhadrasana)", "img": "https://images.unsplash.com/photo-1534367610401-9f5ed68180aa", "vid": "https://www.youtube.com/watch?v=sCReePaPF50"},
-        {"name": "Cobra Pose (Bhujangasana)", "img": "https://images.unsplash.com/photo-1599901860904-17e6ed7083a0", "vid": "https://www.youtube.com/watch?v=fOdrW7nf9gw"},
-        {"name": "Bridge Pose (Setu Bandhasana)", "img": "https://images.unsplash.com/photo-1599447292180-45fd84092ef0", "vid": "https://www.youtube.com/watch?v=NnbvPeAIhmA"},
-        {"name": "Plank Pose (Phalakasana)", "img": "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b", "vid": "https://www.youtube.com/watch?v=RG4PwUP5njo"},
-        {"name": "Boat Pose (Navasana)", "img": "https://images.unsplash.com/photo-1510894347713-fc3ed6fdf539", "vid": "https://www.youtube.com/watch?v=U0uFz7sEw94"},
-        {"name": "Triangle Pose (Trikonasana)", "img": "https://images.unsplash.com/photo-1588286840104-8963b0234eb5", "vid": "https://www.youtube.com/shorts/ailoSBERStw"},
+        {"name": "Sun Salutations (Surya Namaskar)", "img": "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800", "vid": "https://www.youtube.com/watch?v=6IUyY9Dyr5w"},
+        {"name": "Chair Pose (Utkatasana)", "img": "https://images.unsplash.com/photo-1523476843875-43c2cb89aa85?w=800", "vid": "https://www.youtube.com/watch?v=_GIKyB_n1TA"},
+        {"name": "Warrior I & II (Virabhadrasana)", "img": "https://images.unsplash.com/photo-1534367610401-9f5ed68180aa?w=800", "vid": "https://www.youtube.com/watch?v=sCReePaPF50"},
+        {"name": "Cobra Pose (Bhujangasana)", "img": "https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?w=800", "vid": "https://www.youtube.com/watch?v=fOdrW7nf9gw"},
+        {"name": "Bridge Pose (Setu Bandhasana)", "img": "https://images.unsplash.com/photo-1599447292180-45fd84092ef0?w=800", "vid": "https://www.youtube.com/watch?v=NnbvPeAIhmA"},
+        {"name": "Plank Pose (Phalakasana)", "img": "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800", "vid": "https://www.youtube.com/watch?v=RG4PwUP5njo"},
+        {"name": "Boat Pose (Navasana)", "img": "https://images.unsplash.com/photo-1510894347713-fc3ed6fdf539?w=800", "vid": "https://www.youtube.com/watch?v=U0uFz7sEw94"},
+        {"name": "Triangle Pose (Trikonasana)", "img": "https://images.unsplash.com/photo-1588286840104-8963b0234eb5?w=800", "vid": "https://www.youtube.com/watch?v=ailoSBERStw"},
     ]
 
     for asana in yoga_asanas:
