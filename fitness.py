@@ -76,7 +76,7 @@ def display_gym_workouts():
             with st.expander(ex["name"]):
                 col1, col2 = st.columns(2)
                 with col1:
-                    st.image(ex["img"], caption=ex["name"], use_column_width=True)
+                    st.image(ex["img"], caption=ex["name"], use_container_width=True)
                 with col2:
                     st.video(ex["vid"])
 
@@ -98,7 +98,7 @@ def display_yoga_asanas():
         with st.expander(asana["name"]):
             col1, col2 = st.columns(2)
             with col1:
-                st.image(asana["img"], caption=asana["name"], use_column_width=True)
+                st.image(asana["img"], caption=asana["name"], use_container_width=True)
             with col2:
                 st.video(asana["vid"])
 
