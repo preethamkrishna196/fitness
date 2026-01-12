@@ -6,6 +6,35 @@ def calculate_bmi(weight, height_cm):
     height_m = height_cm / 100
     return weight / (height_m * height_m)
 
+def add_bg_from_url():
+    st.markdown(
+         f"""
+         <style>
+         .stApp {{
+             background-image: url("https://images.unsplash.com/photo-1517836357463-d25dfeac3438");
+             background-attachment: fixed;
+             background-size: cover;
+         }}
+
+         /* Make text white for readability on dark background */
+         h1, h2, h3, label, summary, [data-testid="stRadio"] [role="radiogroup"] div {{
+            color: white !important;
+         }}
+
+         [data-testid="stMarkdownContainer"] p, [data-testid="stMarkdownContainer"] li {{
+            color: white !important;
+         }}
+
+         [data-testid="stSidebar"] {{
+            background-color: rgba(0, 0, 0, 0);
+            backdrop-filter: blur(10px);
+         }}
+
+         </style>
+         """,
+         unsafe_allow_html=True
+     )
+
 def bmi_category(bmi):
     if bmi < 18.5:
         return "Underweight"
@@ -55,7 +84,9 @@ def display_nonveg_diet():
 # --- Main Streamlit App ---
 st.set_page_config(page_title="Fitness Advisor", page_icon="💪")
 
-st.title("===== Welcome to Fitness Advisor =====")
+add_bg_from_url()
+
+st.title("Welcome to Fitness Advisor ")
 
 # Sidebar for User Inputs
 with st.sidebar:
