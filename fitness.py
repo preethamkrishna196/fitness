@@ -47,16 +47,57 @@ def bmi_category(bmi):
 
 def display_gym_workouts():
     st.subheader("Gym Workouts")
-    st.write("- **Chest:** Push-ups, Bench Press")
-    st.write("- **Back:** Pull-ups, Lat Pulldown")
-    st.write("- **Shoulders:** Shoulder Press")
-    st.write("- **Arms:** Bicep Curls, Tricep Dips")
-    st.write("- **Legs:** Squats, Lunges")
+    
+    gym_exercises = {
+        "Chest": [
+            {"name": "Push-ups", "img": "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b", "vid": "https://www.youtube.com/watch?v=IODxDxX7oi4"},
+            {"name": "Bench Press", "img": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48", "vid": "https://www.youtube.com/watch?v=rT7DgCr-3pg"},
+        ],
+        "Back": [
+            {"name": "Pull-ups", "img": "https://images.unsplash.com/photo-1598971639058-211a74a96aea", "vid": "https://www.youtube.com/watch?v=eGo4IYlbE5g"},
+            {"name": "Lat Pulldown", "img": "https://images.unsplash.com/photo-1605296867304-6f2a41a42262", "vid": "https://www.youtube.com/watch?v=CAwf7n6Luuc"},
+        ],
+        "Shoulders": [
+            {"name": "Shoulder Press", "img": "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5", "vid": "https://www.youtube.com/watch?v=qEwKCR5JCog"},
+        ],
+        "Arms": [
+            {"name": "Bicep Curls", "img": "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e", "vid": "https://www.youtube.com/watch?v=ykJmrZ5v0Oo"},
+            {"name": "Tricep Dips", "img": "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61", "vid": "https://www.youtube.com/watch?v=6kALZikXxLc"},
+        ],
+        "Legs": [
+            {"name": "Squats", "img": "https://images.unsplash.com/photo-1574680096141-1cddd32e04ca", "vid": "https://www.youtube.com/watch?v=YaXPRqUwItQ"},
+            {"name": "Lunges", "img": "https://images.unsplash.com/photo-1434608519344-49d77a699ded", "vid": "https://www.youtube.com/watch?v=QOVaHwm-Q6U"},
+        ]
+    }
+
+    for muscle, exercises in gym_exercises.items():
+        st.markdown(f"#### {muscle}")
+        for ex in exercises:
+            with st.expander(ex["name"]):
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.image(ex["img"], caption=ex["name"], use_column_width=True)
+                with col2:
+                    st.video(ex["vid"])
 
 def display_yoga_asanas():
     st.subheader("Beginner Friendly Yoga Asanas")
-    st.write("- Tadasana, Vrikshasana, Bhujangasana")
-    st.write("- Adho Mukha Svanasana, Balasana")
+    
+    yoga_asanas = [
+        {"name": "Tadasana (Mountain Pose)", "img": "https://images.unsplash.com/photo-1544367563-12123d8965cd", "vid": "https://www.youtube.com/watch?v=2HTvZp5rPrg"},
+        {"name": "Vrikshasana (Tree Pose)", "img": "https://images.unsplash.com/photo-1566501206188-5dd0cf160a0e", "vid": "https://www.youtube.com/watch?v=wdlb5bxMdpQ"},
+        {"name": "Bhujangasana (Cobra Pose)", "img": "https://images.unsplash.com/photo-1599901860904-17e6ed7083a0", "vid": "https://www.youtube.com/watch?v=fOdrW7nf9gw"},
+        {"name": "Adho Mukha Svanasana (Downward Dog)", "img": "https://images.unsplash.com/photo-1552196563-55cd4e45efb3", "vid": "https://www.youtube.com/watch?v=EC7RGJ975iM"},
+        {"name": "Balasana (Child's Pose)", "img": "https://images.unsplash.com/photo-1545389336-cf090694435e", "vid": "https://www.youtube.com/watch?v=2MJGg-dUKh0"},
+    ]
+
+    for asana in yoga_asanas:
+        with st.expander(asana["name"]):
+            col1, col2 = st.columns(2)
+            with col1:
+                st.image(asana["img"], caption=asana["name"], use_column_width=True)
+            with col2:
+                st.video(asana["vid"])
 
 def display_veg_diet():
     st.subheader("Weekly Vegetarian Diet (80g+ Protein/Day)")
@@ -100,7 +141,7 @@ with st.sidebar:
     st.write("Fill in your details to see the report.")
 
 # Main Content Area
-if name and height_cm and weight:
+if name.strip() != "" and height_cm > 0 and weight > 0:
     # 1. Health Report
     bmi = calculate_bmi(weight, height_cm)
     category = bmi_category(bmi)
