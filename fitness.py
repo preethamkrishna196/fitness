@@ -84,11 +84,14 @@ def display_yoga_asanas():
     st.subheader("Beginner Friendly Yoga Asanas")
     
     yoga_asanas = [
-        {"name": "Tadasana (Mountain Pose)", "img": "https://images.unsplash.com/photo-1544367563-12123d8965cd", "vid": "https://www.youtube.com/watch?v=2HTvZp5rPrg"},
-        {"name": "Vrikshasana (Tree Pose)", "img": "https://images.unsplash.com/photo-1566501206188-5dd0cf160a0e", "vid": "https://www.youtube.com/watch?v=wdlb5bxMdpQ"},
-        {"name": "Bhujangasana (Cobra Pose)", "img": "https://images.unsplash.com/photo-1599901860904-17e6ed7083a0", "vid": "https://www.youtube.com/watch?v=fOdrW7nf9gw"},
-        {"name": "Adho Mukha Svanasana (Downward Dog)", "img": "https://images.unsplash.com/photo-1552196563-55cd4e45efb3", "vid": "https://www.youtube.com/watch?v=EC7RGJ975iM"},
-        {"name": "Balasana (Child's Pose)", "img": "https://images.unsplash.com/photo-1545389336-cf090694435e", "vid": "https://www.youtube.com/watch?v=2MJGg-dUKh0"},
+        {"name": "Sun Salutations (Surya Namaskar)", "img": "https://theyogainstitute.org/surya-namaskar-salutations-to-the-sun", "vid": "https://www.youtube.com/watch?v=6IUyY9Dyr5w"},
+        {"name": "Chair Pose (Utkatasana)", "img": "https://images.unsplash.com/photo-1593810451137-5dc55105dace", "vid": "https://www.youtube.com/watch?v=JXn8nqZ2TQw"},
+        {"name": "Warrior I & II (Virabhadrasana)", "img": "https://images.unsplash.com/photo-1603985529862-9e12198c9a60", "vid": "https://www.youtube.com/watch?v=kkGY3xBnaGc"},
+        {"name": "Cobra Pose (Bhujangasana)", "img": "https://images.unsplash.com/photo-1599901860904-17e6ed7083a0", "vid": "https://www.youtube.com/watch?v=fOdrW7nf9gw"},
+        {"name": "Bridge Pose (Setu Bandhasana)", "img": "https://images.unsplash.com/photo-1603985529204-bbb68a38c0c4", "vid": "https://www.youtube.com/watch?v=NnbvPeAIhmA"},
+        {"name": "Plank Pose (Phalakasana)", "img": "https://images.unsplash.com/photo-1594737625785-c13cfcfe01b5", "vid": "https://www.youtube.com/watch?v=pSHjTRCQxIw"},
+        {"name": "Boat Pose (Navasana)", "img": "https://images.unsplash.com/photo-1593810450967-5e6f6d41f6f6", "vid": "https://www.youtube.com/watch?v=U0uFz7sEw94"},
+        {"name": "Triangle Pose (Trikonasana)", "img": "https://images.unsplash.com/photo-1594737625780-4f8a70b3fa7c", "vid": "https://www.youtube.com/watch?v=H5Q8n_1R9vY"},
     ]
 
     for asana in yoga_asanas:
