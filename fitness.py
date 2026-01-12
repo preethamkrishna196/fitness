@@ -84,14 +84,14 @@ def display_yoga_asanas():
     st.subheader("Beginner Friendly Yoga Asanas")
     
     yoga_asanas = [
-        {"name": "Sun Salutations (Surya Namaskar)", "img": "https://theyogainstitute.org/surya-namaskar-salutations-to-the-sun", "vid": "https://www.youtube.com/watch?v=6IUyY9Dyr5w"},
-        {"name": "Chair Pose (Utkatasana)", "img": "https://images.unsplash.com/photo-1593810451137-5dc55105dace", "vid": "https://www.youtube.com/watch?v=JXn8nqZ2TQw"},
-        {"name": "Warrior I & II (Virabhadrasana)", "img": "https://images.unsplash.com/photo-1603985529862-9e12198c9a60", "vid": "https://www.youtube.com/watch?v=kkGY3xBnaGc"},
-        {"name": "Cobra Pose (Bhujangasana)", "img": "https://images.unsplash.com/photo-1599901860904-17e6ed7083a0", "vid": "https://www.youtube.com/watch?v=fOdrW7nf9gw"},
-        {"name": "Bridge Pose (Setu Bandhasana)", "img": "https://images.unsplash.com/photo-1603985529204-bbb68a38c0c4", "vid": "https://www.youtube.com/watch?v=NnbvPeAIhmA"},
-        {"name": "Plank Pose (Phalakasana)", "img": "https://images.unsplash.com/photo-1594737625785-c13cfcfe01b5", "vid": "https://www.youtube.com/watch?v=pSHjTRCQxIw"},
-        {"name": "Boat Pose (Navasana)", "img": "https://images.unsplash.com/photo-1593810450967-5e6f6d41f6f6", "vid": "https://www.youtube.com/watch?v=U0uFz7sEw94"},
-        {"name": "Triangle Pose (Trikonasana)", "img": "https://images.unsplash.com/photo-1594737625780-4f8a70b3fa7c", "vid": "https://www.youtube.com/watch?v=H5Q8n_1R9vY"},
+        {"name": "Sun Salutations (Surya Namaskar)", "img": "https://chatgpt.com/backend-api/estuary/content?id=786379a34887956%23file_00000000da0871f88d9921555c9b3354%23md&ts=491173&p=fs&cid=1&sig=4fefd52ee7ffbc560dd34f2806ae7c64307d1a45c875ae20eb3d442b3da7def9&v=0", "vid": "https://www.youtube.com/watch?v=6IUyY9Dyr5w"},
+        {"name": "Chair Pose (Utkatasana)", "img": "https://chatgpt.com/backend-api/estuary/content?id=6707b6017504ac5%23file_00000000dd2871f8b274ee6f41de50fd%23md&ts=491173&p=fs&cid=1&sig=148f8e59545982854d8549f614657eee70794134b424f374cef0be8a7229519a&v=0", "vid": "https://www.youtube.com/shorts/_GIKyB_n1TA"},
+        {"name": "Warrior I & II (Virabhadrasana)", "img": "https://srisrischoolofyoga.org/na/wp-content/uploads/2023/01/warrior-pose-three-variations-1-2-3.jpg", "vid": "https://www.youtube.com/watch?v=sCReePaPF50"},
+        {"name": "Cobra Pose (Bhujangasana)", "img": "https://chatgpt.com/backend-api/estuary/content?id=79cfe45a77484b7%23file_00000000945071fda73a71a738919e30%23md&ts=491174&p=fs&cid=1&sig=4a86723862867707467e034297818d21f8f39ff6877cb91fd8bb18546ea0bf4d&v=0", "vid": "https://www.youtube.com/watch?v=fOdrW7nf9gw"},
+        {"name": "Bridge Pose (Setu Bandhasana)", "img": "https://chatgpt.com/backend-api/estuary/content?id=37ee69d03cfa829%23file_00000000f13c71f897a135fa711852e5%23md&ts=491174&p=fs&cid=1&sig=c264aa99d0467e0701db6aa375740c70f559a383784126e02334fb1d5f8434fc&v=0", "vid": "https://www.youtube.com/watch?v=NnbvPeAIhmA"},
+        {"name": "Plank Pose (Phalakasana)", "img": "https://chatgpt.com/backend-api/estuary/content?id=8751a6defeec286%23file_00000000212871f881b56606a9d5adc4%23md&ts=491174&p=fs&cid=1&sig=57d5726c5f177d2a8d497dbf9b681e07d23c7cefd6b3cc28787ef3a94b9c1e50&v=0", "vid": "https://www.youtube.com/watch?v=RG4PwUP5njo"},
+        {"name": "Boat Pose (Navasana)", "img": "https://www.rishikulyogshalarishikesh.com/blog/wp-content/uploads/2023/10/Navasana-1.jpg", "vid": "https://www.youtube.com/watch?v=U0uFz7sEw94"},
+        {"name": "Triangle Pose (Trikonasana)", "img": "https://www.solara.in/cdn/shop/articles/Trikonasana_Benefits.jpg?v=1710761847&width=2048", "vid": "https://www.youtube.com/shorts/ailoSBERStw"},
     ]
 
     for asana in yoga_asanas:
