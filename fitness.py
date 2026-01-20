@@ -54,15 +54,15 @@ def display_gym_workouts():
             {"name": "Bench Press", "img": "https://images.pexels.com/photos/3837781/pexels-photo-3837781.jpeg?auto=compress&cs=tinysrgb&w=800"},
         ],
         "Back": [
-            {"name": "Pull-ups", "img": "https://images.pexels.com/photos/4164761/pexels-photo-4164761.jpeg?auto=compress&cs=tinysrgb&w=800"},
-            {"name": "Lat Pulldown", "img": "https://images.pexels.com/photos/4162451/pexels-photo-4162451.jpeg?auto=compress&cs=tinysrgb&w=800"},
+            {"name": "Pull-ups", "img": "https://images.pexels.com/photos/35649982/pexels-photo-35649982.jpeg"},
+            {"name": "Lat Pulldown", "img": "https://www.pexels.com/photo/back-view-of-a-man-doing-pull-ups-in-a-gym-29084397/"},
         ],
         "Shoulders": [
             {"name": "Shoulder Press", "img": "https://images.pexels.com/photos/1552249/pexels-photo-1552249.jpeg?auto=compress&cs=tinysrgb&w=800"},
         ],
         "Arms": [
             {"name": "Bicep Curls", "img": "https://images.pexels.com/photos/1229356/pexels-photo-1229356.jpeg?auto=compress&cs=tinysrgb&w=800"},
-            {"name": "Tricep Dips", "img": "https://images.pexels.com/photos/4164852/pexels-photo-4164852.jpeg?auto=compress&cs=tinysrgb&w=800"},
+            {"name": "Tricep Dips", "img": "https://www.pexels.com/photo/strong-man-training-in-modern-gym-5496589/"},
         ],
         "Legs": [
             {"name": "Squats", "img": "https://images.pexels.com/photos/1552252/pexels-photo-1552252.jpeg?auto=compress&cs=tinysrgb&w=800"},
@@ -80,14 +80,12 @@ def display_yoga_asanas():
     st.subheader("Beginner Friendly Yoga Asanas")
     
     yoga_asanas = [
-        {"name": "Sun Salutations (Surya Namaskar)", "img": "https://images.pexels.com/photos/3823039/pexels-photo-3823039.jpeg?auto=compress&cs=tinysrgb&w=800"},
-        {"name": "Chair Pose (Utkatasana)", "img": "https://images.pexels.com/photos/3822864/pexels-photo-3822864.jpeg?auto=compress&cs=tinysrgb&w=800"},
-        {"name": "Warrior I & II (Virabhadrasana)", "img": "https://images.pexels.com/photos/3823063/pexels-photo-3823063.jpeg?auto=compress&cs=tinysrgb&w=800"},
+        {"name": "Sun Salutations (Surya Namaskar)", "img": "https://m.media-amazon.com/images/I/71YQoq8+neL._AC_UF894,1000_QL80_.jpg"},
+        {"name": "Chair Pose (Utkatasana)", "img": "https://thumbs.dreamstime.com/b/beautiful-yoga-chair-pose-side-view-portrait-young-woman-wearing-white-sportswear-working-out-against-grey-wall-doing-83518417.jpg"},
+        {"name": "Warrior I & II (Virabhadrasana)", "img": "https://www.shutterstock.com/image-vector/young-woman-standing-virabhadrasana-active-260nw-2125965767.jpg"},
         {"name": "Cobra Pose (Bhujangasana)", "img": "https://images.pexels.com/photos/3823076/pexels-photo-3823076.jpeg?auto=compress&cs=tinysrgb&w=800"},
-        {"name": "Bridge Pose (Setu Bandhasana)", "img": "https://images.pexels.com/photos/3822906/pexels-photo-3822906.jpeg?auto=compress&cs=tinysrgb&w=800"},
-        {"name": "Plank Pose (Phalakasana)", "img": "https://images.pexels.com/photos/3823086/pexels-photo-3823086.jpeg?auto=compress&cs=tinysrgb&w=800"},
-        {"name": "Boat Pose (Navasana)", "img": "https://images.pexels.com/photos/4056723/pexels-photo-4056723.jpeg?auto=compress&cs=tinysrgb&w=800"},
-        {"name": "Triangle Pose (Trikonasana)", "img": "https://images.pexels.com/photos/3823033/pexels-photo-3823033.jpeg?auto=compress&cs=tinysrgb&w=800"},
+        {"name": "Bridge Pose (Setu Bandhasana)", "img": "https://i.pinimg.com/736x/75/b1/ea/75b1ea4d05b89cf46917566978c7fc19.jpg"},
+        {"name": "Triangle Pose (Trikonasana)", "img": "https://media.istockphoto.com/id/636608240/photo/utthita-trikonasana-extended-triangle-pose.jpg?s=612x612&w=0&k=20&c=F8F8TMH1sB2YbQst13-5SqqocAkyDN3cMJJsjIaVnMs="},
     ]
 
     for asana in yoga_asanas:
