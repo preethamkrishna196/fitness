@@ -155,51 +155,50 @@ def display_gender_workout_tips(gender):
 WORKOUT_DB = {
     "advanced": {
         "Chest": [
-            {"name": "Bench Press", "sets": 4, "reps": "8-10"},
-            {"name": "Push-ups", "sets": 3, "reps": "12-15"},
-            {"name": "Incline Dumbbell Press", "sets": 3, "reps": "10-12"}
+            {"name": "Bench Press", "sets": 4, "reps": "8-10", "img": "https://images.pexels.com/photos/3837781/pexels-photo-3837781.jpeg"},
+            {"name": "Push-ups", "sets": 3, "reps": "12-15", "img": "https://images.pexels.com/photos/176782/pexels-photo-176782.jpeg"},
+            {"name": "Incline Dumbbell Press", "sets": 3, "reps": "10-12", "img": "https://images.pexels.com/photos/7187890/pexels-photo-7187890.jpeg"}
         ],
         "Back": [
-            {"name": "Pull-ups", "sets": 3, "reps": "6-10"},
-            {"name": "Lat Pulldown", "sets": 3, "reps": "10-12"},
-            {"name": "Deadlifts", "sets": 4, "reps": "6-8"}
+            {"name": "Pull-ups", "sets": 3, "reps": "6-10", "img": "https://i0.wp.com/post.healthline.com/wp-content/uploads/2019/12/pull-up-pullup-gym-1296x728-header-1296x728.jpg?w=1155&h=1528"},
+            {"name": "Lat Pulldown", "sets": 3, "reps": "10-12", "img": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Lat-Pulldown.gif"},
         ],
         "Shoulders": [
-            {"name": "Overhead Press", "sets": 3, "reps": "10-12"},
-            {"name": "Lateral Raises", "sets": 3, "reps": "12-15"}
+            {"name": "Overhead Press", "sets": 3, "reps": "10-12", "img": "https://weighttraining.guide/wp-content/uploads/2016/05/Dumbbell-Shoulder-Press-resized.png"},
+            {"name": "Lateral Raises", "sets": 3, "reps": "12-15", "img": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Lateral-Raise.gif"}
         ],
         "Arms": [
-            {"name": "Bicep Curls", "sets": 3, "reps": "10-12"},
-            {"name": "Tricep Dips", "sets": 3, "reps": "10-12"}
+            {"name": "Bicep Curls", "sets": 3, "reps": "10-12", "img": "https://images.pexels.com/photos/1229356/pexels-photo-1229356.jpeg"},
+            {"name": "Tricep Dips", "sets": 3, "reps": "10-12", "img": "https://liftmanual.com/wp-content/uploads/2023/04/dumbbell-standing-triceps-extension.jpg"}
         ],
         "Legs": [
-            {"name": "Squats", "sets": 4, "reps": "8-10"},
-            {"name": "Leg Press", "sets": 3, "reps": "10-12"},
-            {"name": "Lunges", "sets": 3, "reps": "12-15"}
+            {"name": "Squats", "sets": 4, "reps": "8-10", "img": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Jump-Squat.gif"},
+            {"name": "Leg Press", "sets": 3, "reps": "10-12", "img": "https://fitnessprogramer.com/wp-content/uploads/2015/11/Leg-Press.gif"},
+            {"name": "Lunges", "sets": 3, "reps": "12-15", "img": "https://media.post.rvohealth.io/wp-content/uploads/2023/08/AltruisticFantasticCub-size_restricted-1.gif"}
         ]
     },
     "beginner": {
         "Full Body": [
-            {"name": "Bodyweight Squats", "sets": 3, "reps": "12-15"},
-            {"name": "Push-ups", "sets": 3, "reps": "8-12"}
+            {"name": "Bodyweight Squats", "sets": 3, "reps": "12-15", "img": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Jump-Squat.gif"},
+            {"name": "Push-ups", "sets": 3, "reps": "8-12", "img": "https://images.pexels.com/photos/176782/pexels-photo-176782.jpeg"}
         ],
         "Cardio": [
-            {"name": "Treadmill", "duration": "20 min"},
-            {"name": "Cycling", "duration": "15 min"}
+            {"name": "Treadmill", "duration": "20 min", "img": "https://images.pexels.com/photos/1954524/pexels-photo-1954524.jpeg"},
+            {"name": "Cycling", "duration": "15 min", "img": "https://fitnessprogramer.com/wp-content/uploads/2021/06/Bike.gif"}
         ],
         "Lower Body": [
-            {"name": "Glute Bridges", "sets": 3, "reps": "12-15"},
-            {"name": "Lunges", "sets": 3, "reps": "10-12"},
-            {"name": "Leg Press", "sets": 3, "reps": "10-12"}
+            {"name": "Glute Bridges", "sets": 3, "reps": "12-15", "img": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Glute-Bridge-.gif"},
+            {"name": "Lunges", "sets": 3, "reps": "10-12", "img": "https://media.post.rvohealth.io/wp-content/uploads/2023/08/AltruisticFantasticCub-size_restricted-1.gif"},
+            {"name": "Leg Press", "sets": 3, "reps": "10-12", "img": "https://fitnessprogramer.com/wp-content/uploads/2015/11/Leg-Press.gif"}
         ],
         "Core": [
-            {"name": "Plank", "duration": "30-60 sec"},
-            {"name": "Crunches", "sets": 3, "reps": "15-20"},
-            {"name": "Russian Twists", "sets": 3, "reps": "20"}
+            {"name": "Plank", "duration": "30-60 sec", "img": "https://www.inspireusafoundation.org/file/2022/11/body-saw-plank.gif"},
+            {"name": "Crunches", "sets": 3, "reps": "15-20", "img": "https://fitnessprogramer.com/wp-content/uploads/2022/07/Cross-Crunch.gif"},
+            {"name": "Russian Twists", "sets": 3, "reps": "20", "img": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Russian-Twist.gif"}
         ],
         "Arms": [
-            {"name": "Resistance Band Curls", "sets": 3, "reps": "12-15"},
-            {"name": "Tricep Kickbacks", "sets": 3, "reps": "12-15"}
+            {"name": "Resistance Band Curls", "sets": 3, "reps": "12-15", "img": "https://fitnessprogramer.com/wp-content/uploads/2022/02/Band-Biceps-Curl.gif"},
+            {"name": "Tricep Kickbacks", "sets": 3, "reps": "12-15", "img": "https://media.tenor.com/PZjMZqyfPgcAAAAM/db-tricep-kickback.gif"}
         ]
     }
 }
@@ -217,10 +216,16 @@ def display_gym_workouts(gender):
     for muscle, exercises in workouts.items():
         with st.expander(muscle):
             for ex in exercises:
-                if "duration" in ex:
-                    st.write(f"• **{ex['name']}**: {ex['duration']}")
-                else:
-                    st.write(f"• **{ex['name']}**: {ex['sets']} sets x {ex['reps']} reps")
+                col1, col2 = st.columns([1, 3])
+                with col1:
+                    st.image(ex["img"], use_column_width=True)
+                with col2:
+                    st.write(f"**{ex['name']}**")
+                    if "duration" in ex:
+                        st.write(f"Duration: {ex['duration']}")
+                    else:
+                        st.write(f"{ex['sets']} sets x {ex['reps']} reps")
+                st.divider()
 
 # ---------------- Yoga Workouts ----------------
 def display_yoga_asanas(gender):
@@ -228,24 +233,30 @@ def display_yoga_asanas(gender):
 
     if gender == "Male":
         asanas = [
-            "Surya Namaskar",
-            "Bhujangasana (Cobra Pose)",
-            "Trikonasana (Triangle Pose)",
-            "Vrikshasana (Tree Pose)",
-            "Adho Mukha Svanasana"
+            {"name": "Surya Namaskar", "img": "https://i.pinimg.com/736x/77/1a/d0/771ad07e2bff1a844011657366b97bdd.jpg"},
+            {"name": "Bhujangasana (Cobra Pose)", "img": "https://media.istockphoto.com/id/924163406/photo/young-woman-doing-cobra-exercise.jpg?s=612x612&w=0&k=20&c=h9nNF3H0eYGIZMTTPy1aGuU8_grk0Hc_caQEU93CU2Y="},
+            {"name": "Trikonasana (Triangle Pose)", "img": "https://media.istockphoto.com/id/636608240/photo/utthita-trikonasana-extended-triangle-pose.jpg?s=612x612&w=0&k=20&c=F8F8TMH1sB2YbQst13-5SqqocAkyDN3cMJJsjIaVnMs="},
+            {"name": "Vrikshasana (Tree Pose)", "img": "https://media.istockphoto.com/id/667293728/photo/young-yogi-attractive-woman-in-vrksasana-pose-white-loft-background.jpg?s=612x612&w=0&k=20&c=4gRlwc21131Q_SKrj3evMNERTL_kiLWgcEA_Z6Eucco="},
+            {"name": "Adho Mukha Svanasana", "img": "https://media.istockphoto.com/id/1152625738/photo/woman-practicing-yoga-downward-facing-dog-adho-mukha-svanasana.jpg?s=612x612&w=0&k=20&c=s2NN_rAFN3ImQrWayCP7WYySo5O8Q5zs8trmBQuUlk4="}
         ]
     else:
         asanas = [
-            "Surya Namaskar",
-            "Utkatasana (Chair Pose)",
-            "Setu Bandhasana (Bridge Pose)",
-            "Balasana (Child’s Pose)",
-            "Baddha Konasana (Butterfly Pose)"
+            {"name": "Surya Namaskar", "img": "https://i.pinimg.com/736x/77/1a/d0/771ad07e2bff1a844011657366b97bdd.jpg"},
+            {"name": "Utkatasana (Chair Pose)", "img": "https://media.istockphoto.com/id/639103576/photo/chair-pose.jpg?s=612x612&w=0&k=20&c=J1EZ71EYaZgmVxnfa0ZpziCPSnBBsRtiK2dvpXCQxvY="},
+            {"name": "Setu Bandhasana (Bridge Pose)", "img": "https://media.istockphoto.com/id/607482492/photo/beautiful-sporty-fit-yogi-girl-practices-yoga-asana-setu-bandhas.jpg?s=612x612&w=0&k=20&c=8_Lz_YnL5rN4659ht0PKjJfGU7iMXvRt4b9rizz66Lk="},
+            {"name": "Balasana (Child’s Pose)", "img": "https://media.istockphoto.com/id/542715024/photo/pregnant-young-woman-doing-prenatal-child-yoga-pose-balasana.jpg?s=612x612&w=0&k=20&c=-UI9AuOGvipPNPHTdUjmZyUINw9tq5Kid8CCGe_klHw="},
+            {"name": "Baddha Konasana (Butterfly Pose)", "img": "https://media.istockphoto.com/id/579760132/photo/sporty-fit-woman-practices-yoga-asana-baddha-konasana-outdoors.jpg?s=612x612&w=0&k=20&c=RtO8sS8lqszUXvZA4it-lVRjOa6ivS6A6pdnSg1JXQU="}
         ]
 
     for pose in asanas:
-        with st.expander(pose):
-            st.write(f"✔ Recommended for {gender}")
+        with st.expander(pose["name"]):
+            col1, col2 = st.columns([1, 2])
+            with col1:
+                st.image(pose["img"], use_column_width=True)
+            with col2:
+                st.write(f"**{pose['name']}**")
+                st.write(f"✔ Recommended for {gender}")
+                st.write("Focus on proper form and breathing for maximum benefit.")
 
 # ---------------- Main App ----------------
 st.set_page_config(page_title="Fitness Advisor", page_icon="🏋️")
