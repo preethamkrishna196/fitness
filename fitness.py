@@ -35,9 +35,9 @@ def add_bg_from_url():
         unsafe_allow_html=True
     )
 
-# ---------------- Diet Section ----------------
+# ---------------- Diet Section (Daily BMI Based) ----------------
 def display_diet_plan(diet_type, bmi_cat, gender):
-    st.subheader(f"{diet_type} Diet Plan")
+    st.subheader(f"{diet_type} Daily Diet Plan")
 
     gender_note = "Higher calorie needs" if gender == "Male" else "Moderate calorie needs"
     st.caption(f"👤 {gender} • {bmi_cat} • {gender_note}")
@@ -100,6 +100,48 @@ def display_diet_plan(diet_type, bmi_cat, gender):
     with st.expander("View Daily Diet Plan"):
         for meal, value in plans[bmi_cat].items():
             st.write(f"**{meal}:** {value}")
+
+# ---------------- Weekly Diet Plan ----------------
+def display_weekly_diet_plan(diet_type):
+    st.subheader(f"🗓️ Weekly {diet_type} Diet Plan")
+
+    weekly_plan = {
+        "Monday": {
+            "Veg": ["Upma + Chutney", "Rice + Dal + Veg", "Chapati + Paneer"],
+            "Non-Veg": ["Eggs + Toast", "Chicken Curry + Rice", "Chapati + Egg Curry"]
+        },
+        "Tuesday": {
+            "Veg": ["Idli + Sambar", "Chapati + Rajma", "Veg Pulao + Curd"],
+            "Non-Veg": ["Omelette + Dosa", "Fish Curry + Chapati", "Chicken Pulao"]
+        },
+        "Wednesday": {
+            "Veg": ["Poha", "Rice + Sambar + Veg", "Chapati + Mixed Veg"],
+            "Non-Veg": ["Egg Bhurji + Bread", "Chicken Fry + Rice", "Chapati + Fish"]
+        },
+        "Thursday": {
+            "Veg": ["Oats Porridge", "Lemon Rice + Curd", "Chapati + Dal"],
+            "Non-Veg": ["Oats + Boiled Eggs", "Egg Curry + Rice", "Chapati + Chicken"]
+        },
+        "Friday": {
+            "Veg": ["Veg Sandwich", "Rice + Veg Fry + Curd", "Chapati + Paneer"],
+            "Non-Veg": ["Egg Sandwich", "Fish Curry + Rice", "Chapati + Egg Curry"]
+        },
+        "Saturday": {
+            "Veg": ["Dosa + Chutney", "Veg Biryani + Raita", "Khichdi"],
+            "Non-Veg": ["Dosa + Omelette", "Chicken Biryani + Raita", "Chicken Soup"]
+        },
+        "Sunday": {
+            "Veg": ["Paratha + Curd", "Rice + Dal + Veg", "Veg Soup + Chapati"],
+            "Non-Veg": ["Paratha + Omelette", "Mutton/Chicken Curry + Rice", "Egg Soup"]
+        }
+    }
+
+    for day, meals in weekly_plan.items():
+        with st.expander(day):
+            selected_meals = meals["Veg"] if diet_type == "Vegetarian" else meals["Non-Veg"]
+            st.write(f"**Breakfast:** {selected_meals[0]}")
+            st.write(f"**Lunch:** {selected_meals[1]}")
+            st.write(f"**Dinner:** {selected_meals[2]}")
 
 # ---------------- Workout Tips ----------------
 def display_gender_workout_tips(gender):
@@ -213,13 +255,23 @@ if name and height_cm > 0 and weight > 0:
 
     # Diet Section
     st.header("Diet Plan")
+
+    diet_view = st.radio(
+        "Choose diet plan type:",
+        ["Daily (BMI Based)", "Weekly"],
+        horizontal=True
+    )
+
     diet_choice = st.radio(
         "Choose diet type:",
         ["Vegetarian", "Non-Vegetarian"],
         horizontal=True
     )
 
-    display_diet_plan(diet_choice, category, gender)
+    if diet_view == "Daily (BMI Based)":
+        display_diet_plan(diet_choice, category, gender)
+    else:
+        display_weekly_diet_plan(diet_choice)
 
     st.success("Thank you for using Fitness Advisor!")
 else:
