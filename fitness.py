@@ -151,31 +151,76 @@ def display_gender_workout_tips(gender):
     else:
         st.info("🌸 Focus on toning, flexibility, core strength, 3–5 days/week.")
 
+# ---------------- Workout Database ----------------
+WORKOUT_DB = {
+    "advanced": {
+        "Chest": [
+            {"name": "Bench Press", "sets": 4, "reps": "8-10"},
+            {"name": "Push-ups", "sets": 3, "reps": "12-15"},
+            {"name": "Incline Dumbbell Press", "sets": 3, "reps": "10-12"}
+        ],
+        "Back": [
+            {"name": "Pull-ups", "sets": 3, "reps": "6-10"},
+            {"name": "Lat Pulldown", "sets": 3, "reps": "10-12"},
+            {"name": "Deadlifts", "sets": 4, "reps": "6-8"}
+        ],
+        "Shoulders": [
+            {"name": "Overhead Press", "sets": 3, "reps": "10-12"},
+            {"name": "Lateral Raises", "sets": 3, "reps": "12-15"}
+        ],
+        "Arms": [
+            {"name": "Bicep Curls", "sets": 3, "reps": "10-12"},
+            {"name": "Tricep Dips", "sets": 3, "reps": "10-12"}
+        ],
+        "Legs": [
+            {"name": "Squats", "sets": 4, "reps": "8-10"},
+            {"name": "Leg Press", "sets": 3, "reps": "10-12"},
+            {"name": "Lunges", "sets": 3, "reps": "12-15"}
+        ]
+    },
+    "beginner": {
+        "Full Body": [
+            {"name": "Bodyweight Squats", "sets": 3, "reps": "12-15"},
+            {"name": "Push-ups", "sets": 3, "reps": "8-12"}
+        ],
+        "Cardio": [
+            {"name": "Treadmill", "duration": "20 min"},
+            {"name": "Cycling", "duration": "15 min"}
+        ],
+        "Lower Body": [
+            {"name": "Glute Bridges", "sets": 3, "reps": "12-15"},
+            {"name": "Lunges", "sets": 3, "reps": "10-12"},
+            {"name": "Leg Press", "sets": 3, "reps": "10-12"}
+        ],
+        "Core": [
+            {"name": "Plank", "duration": "30-60 sec"},
+            {"name": "Crunches", "sets": 3, "reps": "15-20"},
+            {"name": "Russian Twists", "sets": 3, "reps": "20"}
+        ],
+        "Arms": [
+            {"name": "Resistance Band Curls", "sets": 3, "reps": "12-15"},
+            {"name": "Tricep Kickbacks", "sets": 3, "reps": "12-15"}
+        ]
+    }
+}
+
 # ---------------- Gym Workouts ----------------
 def display_gym_workouts(gender):
     st.subheader("Gym Workouts")
 
-    if gender == "Male":
-        workouts = {
-            "Chest": ["Bench Press", "Push-ups", "Incline Dumbbell Press"],
-            "Back": ["Pull-ups", "Lat Pulldown", "Deadlifts"],
-            "Shoulders": ["Overhead Press", "Lateral Raises"],
-            "Arms": ["Bicep Curls", "Tricep Dips"],
-            "Legs": ["Squats", "Leg Press", "Lunges"]
-        }
-    else:
-        workouts = {
-            "Lower Body": ["Glute Bridges", "Lunges", "Leg Press"],
-            "Core": ["Plank", "Crunches", "Russian Twists"],
-            "Arms": ["Resistance Band Curls", "Tricep Kickbacks"],
-            "Full Body": ["Bodyweight Squats", "Push-ups"],
-            "Cardio": ["Treadmill", "Cycling"]
-        }
+    # Default to advanced for Male, beginner for Female, but allow switching
+    default_idx = 0 if gender == "Female" else 1
+    level = st.radio("Select Level", ["beginner", "advanced"], index=default_idx, format_func=lambda x: x.capitalize(), horizontal=True)
+    
+    workouts = WORKOUT_DB[level]
 
     for muscle, exercises in workouts.items():
         with st.expander(muscle):
             for ex in exercises:
-                st.write(f"• {ex}")
+                if "duration" in ex:
+                    st.write(f"• **{ex['name']}**: {ex['duration']}")
+                else:
+                    st.write(f"• **{ex['name']}**: {ex['sets']} sets x {ex['reps']} reps")
 
 # ---------------- Yoga Workouts ----------------
 def display_yoga_asanas(gender):
