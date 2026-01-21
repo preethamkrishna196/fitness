@@ -24,6 +24,9 @@ def add_bg_from_url():
             background-size: cover;
             background-attachment: fixed;
         }
+        [data-testid="stSidebar"] {
+            background-color: grey;
+        }
         h1, h2, h3, label, p {
             color: white !important;
         }
