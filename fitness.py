@@ -5,6 +5,7 @@ import os
 import datetime
 import pandas as pd
 import random
+import hashlib
 
 try:
     from fpdf import FPDF
@@ -407,10 +408,75 @@ def check_badges(streak, bmi_history):
 st.set_page_config(page_title="Fitness Advisor", page_icon="🏋️")
 add_bg_from_url()
 
+if 'logged_in' not in st.session_state:
+    st.session_state.logged_in = False
+if 'username' not in st.session_state:
+    st.session_state.username = ""
+
+def make_hashes(password):
+    return hashlib.sha256(str.encode(password)).hexdigest()
+
+def check_hashes(password, hashed_text):
+    if make_hashes(password) == hashed_text:
+        return True
+    return False
+
+def login_page():
+    st.title("Fitness Advisor Login")
+    
+    tab1, tab2 = st.tabs(["Login", "Sign Up"])
+    
+    with tab1:
+        username = st.text_input("Username")
+        password = st.text_input("Password", type='password')
+        if st.button("Login"):
+            if not os.path.exists("users.json"):
+                st.error("No users found. Please sign up.")
+            else:
+                with open("users.json", "r") as f:
+                    users = json.load(f)
+                if username in users and check_hashes(password, users[username]):
+                    st.session_state.logged_in = True
+                    st.session_state.username = username
+                    st.success("Logged in!")
+                    st.rerun()
+                else:
+                    st.error("Incorrect Username or Password")
+
+    with tab2:
+        new_user = st.text_input("New Username")
+        new_password = st.text_input("New Password", type='password')
+        if st.button("Sign Up"):
+            if not os.path.exists("users.json"):
+                with open("users.json", "w") as f:
+                    json.dump({}, f)
+            with open("users.json", "r") as f:
+                users = json.load(f)
+            if new_user in users:
+                st.error("Username already exists.")
+            else:
+                users[new_user] = make_hashes(new_password)
+                with open("users.json", "w") as f:
+                    json.dump(users, f)
+                st.success("Account created! Please login.")
+
+if not st.session_state.logged_in:
+    login_page()
+    st.stop()
+
+USER_DATA_FILE = f"user_data_{st.session_state.username}.json"
+
 st.title("Welcome to Fitness Advisor")
 
 # ---------------- Sidebar ----------------
 with st.sidebar:
+    st.write(f"Logged in as: **{st.session_state.username}**")
+    if st.button("Logout"):
+        st.session_state.logged_in = False
+        st.session_state.username = ""
+        st.rerun()
+    st.divider()
+
     st.header("Enter Your Details")
 
     # Load saved data if exists
@@ -421,9 +487,9 @@ with st.sidebar:
         "schedule": {"Monday": "", "Tuesday": "", "Wednesday": "", "Thursday": "", "Friday": "", "Saturday": "", "Sunday": ""}
     }
     
-    if os.path.exists("user_data.json"):
+    if os.path.exists(USER_DATA_FILE):
         try:
-            with open("user_data.json", "r") as f:
+            with open(USER_DATA_FILE, "r") as f:
                 default_data.update(json.load(f))
         except Exception as e:
             st.error(f"Error loading data: {e}")
@@ -465,7 +531,7 @@ with st.sidebar:
             "history": default_data["history"], "streak": default_data["streak"], "last_visit": today_str,
             "schedule": default_data.get("schedule", {})
         }
-        with open("user_data.json", "w") as f:
+        with open(USER_DATA_FILE, "w") as f:
             json.dump(user_data, f)
         st.success("Profile saved!")
 
@@ -545,7 +611,7 @@ if name and height_cm > 0 and weight > 0:
             if st.button("Save Schedule"):
                 default_data["schedule"] = updated_schedule
                 # Save to file logic repeated for simplicity or create a helper
-                with open("user_data.json", "w") as f:
+                with open(USER_DATA_FILE, "w") as f:
                     # Merge with existing data to not lose other fields
                     full_data = default_data.copy()
                     full_data["schedule"] = updated_schedule
