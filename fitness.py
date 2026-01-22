@@ -1,4 +1,5 @@
 import streamlit as st
+import time
 
 # ---------------- Utility Functions ----------------
 def calculate_bmi(weight, height_cm):
@@ -258,6 +259,67 @@ def display_yoga_asanas(gender):
                 st.write(f"✔ Recommended for {gender}")
                 st.write("Focus on proper form and breathing for maximum benefit.")
 
+# ---------------- Countdown Timer ----------------
+def display_countdown_timer():
+    st.subheader("Workout Countdown Timer")
+
+    # Initialize session state variables
+    if 'timer_running' not in st.session_state:
+        st.session_state.timer_running = False
+    if 'countdown_seconds' not in st.session_state:
+        st.session_state.countdown_seconds = 60
+    if 'end_time' not in st.session_state:
+        st.session_state.end_time = 0
+    if 'timer_finished' not in st.session_state:
+        st.session_state.timer_finished = False
+
+    # Display the success message and balloons when the timer finishes
+    if st.session_state.timer_finished:
+        st.success("🎉 Time's up!")
+        st.balloons()
+        st.session_state.timer_finished = False  # Reset for the next run
+
+    # Input for setting the timer duration
+    seconds = st.number_input(
+        "Set timer (seconds):",
+        min_value=1,
+        value=st.session_state.countdown_seconds,
+        disabled=st.session_state.timer_running
+    )
+    if not st.session_state.timer_running:
+        st.session_state.countdown_seconds = seconds
+
+    def start_timer():
+        st.session_state.timer_running = True
+        st.session_state.end_time = time.time() + st.session_state.countdown_seconds
+        st.session_state.timer_finished = False
+
+    def stop_timer():
+        st.session_state.timer_running = False
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.button("Start Timer", on_click=start_timer, disabled=st.session_state.timer_running)
+    with col2:
+        st.button("Stop Timer", on_click=stop_timer, disabled=not st.session_state.timer_running)
+
+    timer_placeholder = st.empty()
+
+    if st.session_state.timer_running:
+        remaining_time = st.session_state.end_time - time.time()
+        if remaining_time > 0:
+            mins, secs = divmod(remaining_time, 60)
+            timer_placeholder.metric("⏳ Time Remaining", f"{int(mins):02d}:{int(secs):02d}")
+            time.sleep(1)
+            st.rerun()
+        else:
+            st.session_state.timer_running = False
+            st.session_state.timer_finished = True
+            st.rerun()
+    elif not st.session_state.timer_finished:
+        mins, secs = divmod(st.session_state.countdown_seconds, 60)
+        timer_placeholder.metric("⏳ Time Remaining", f"{int(mins):02d}:{int(secs):02d}")
+
 # ---------------- Main App ----------------
 st.set_page_config(page_title="Fitness Advisor", page_icon="🏋️")
 add_bg_from_url()
@@ -295,6 +357,9 @@ if name and height_cm > 0 and weight > 0:
     # Workout Section
     st.header("Workout Recommendations")
     display_gender_workout_tips(gender)
+
+    display_countdown_timer()
+    st.divider()
 
     workout_choice = st.radio(
         "Choose workout type:",
