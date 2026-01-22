@@ -42,6 +42,17 @@ def add_bg_from_url():
         h1, h2, h3, label, p {
             color: white !important;
         }
+        /* Custom button styles */
+        div[data-testid="stButton"] > button {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        div[data-tstid="stButton"] > button:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+            color: white;
+        }
         </style>
         """,
         unsafe_allow_html=True
