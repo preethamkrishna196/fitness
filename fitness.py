@@ -2,6 +2,14 @@ import streamlit as st
 import time
 import json
 import os
+import datetime
+import pandas as pd
+import random
+
+try:
+    from fpdf import FPDF
+except ImportError:
+    FPDF = None
 
 # ---------------- Utility Functions ----------------
 def calculate_bmi(weight, height_cm):
@@ -322,6 +330,79 @@ def display_countdown_timer():
         mins, secs = divmod(st.session_state.countdown_seconds, 60)
         timer_placeholder.metric("⏳ Time Remaining", f"{int(mins):02d}:{int(secs):02d}")
 
+# ---------------- New Features ----------------
+def calculate_calories(weight, height, age, gender, activity_level):
+    # Mifflin-St Jeor Equation
+    if gender == "Male":
+        bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5
+    else:
+        bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161
+    
+    multipliers = {
+        "Sedentary (little or no exercise)": 1.2,
+        "Lightly active (1-3 days/week)": 1.375,
+        "Moderately active (3-5 days/week)": 1.55,
+        "Very active (6-7 days/week)": 1.725,
+        "Super active (physical job)": 1.9
+    }
+    return int(bmr * multipliers[activity_level])
+
+def get_ai_response(prompt):
+    # Simple rule-based AI response simulation
+    prompt = prompt.lower()
+    if "weight" in prompt:
+        return "To manage weight, focus on a caloric deficit for loss or surplus for gain, combined with consistent strength training."
+    elif "muscle" in prompt:
+        return "Building muscle requires progressive overload in your workouts and sufficient protein intake (1.6g-2.2g per kg of bodyweight)."
+    elif "diet" in prompt or "food" in prompt:
+        return "A balanced diet should include lean proteins, healthy fats, and complex carbohydrates. Avoid processed sugars."
+    elif "pain" in prompt or "hurt" in prompt:
+        return "If you're experiencing pain, please stop exercising immediately and consult a medical professional. Rest is crucial."
+    elif "hello" in prompt or "hi" in prompt:
+        return "Hello! I'm your AI Fitness Coach. How can I help you reach your goals today?"
+    else:
+        return "That's a great question. Consistency is key! Focus on your daily habits, stay hydrated, and get enough sleep."
+
+def create_pdf(user_data, bmi, category, advice):
+    if FPDF is None:
+        return None
+    
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+    
+    pdf.set_font("Arial", 'B', 16)
+    pdf.cell(200, 10, txt="Fitness Advisor - Health Report", ln=1, align='C')
+    pdf.ln(10)
+    
+    pdf.set_font("Arial", size=12)
+    pdf.cell(200, 10, txt=f"Date: {datetime.date.today()}", ln=1)
+    pdf.cell(200, 10, txt=f"Name: {user_data['name']}", ln=1)
+    pdf.cell(200, 10, txt=f"Age: {user_data['age']} | Gender: {user_data['gender']}", ln=1)
+    pdf.cell(200, 10, txt=f"Height: {user_data['height']} cm | Weight: {user_data['weight']} kg", ln=1)
+    pdf.ln(10)
+    
+    pdf.set_font("Arial", 'B', 14)
+    pdf.cell(200, 10, txt=f"BMI: {bmi:.2f} ({category})", ln=1)
+    pdf.ln(5)
+    
+    pdf.set_font("Arial", size=12)
+    pdf.multi_cell(0, 10, txt=f"Workout Focus: {advice}")
+    pdf.ln(5)
+    pdf.multi_cell(0, 10, txt="Remember to stay hydrated and maintain a balanced diet!")
+    
+    return pdf.output(dest='S').encode('latin-1')
+
+def check_badges(streak, bmi_history):
+    badges = []
+    if streak >= 5:
+        badges.append("🔥 5 Day Streak")
+    if len(bmi_history) > 1 and bmi_history[-1]['bmi'] < bmi_history[0]['bmi']:
+        badges.append("🎯 BMI Improved")
+    if len(bmi_history) >= 1:
+        badges.append("🏆 First Step Taken")
+    return badges
+
 # ---------------- Main App ----------------
 st.set_page_config(page_title="Fitness Advisor", page_icon="🏋️")
 add_bg_from_url()
@@ -333,7 +414,13 @@ with st.sidebar:
     st.header("Enter Your Details")
 
     # Load saved data if exists
-    default_data = {"name": "", "age": 25, "gender": "Male", "height": 170.0, "weight": 60.0}
+    default_data = {
+        "name": "", "age": 25, "gender": "Male", 
+        "height": 170.0, "weight": 60.0, 
+        "history": [], "streak": 0, "last_visit": "",
+        "schedule": {"Monday": "", "Tuesday": "", "Wednesday": "", "Thursday": "", "Friday": "", "Saturday": "", "Sunday": ""}
+    }
+    
     if os.path.exists("user_data.json"):
         try:
             with open("user_data.json", "r") as f:
@@ -348,13 +435,35 @@ with st.sidebar:
     height_cm = st.number_input("Height (cm)", min_value=1.0, value=float(default_data["height"]))
     weight = st.number_input("Weight (kg)", min_value=1.0, value=float(default_data["weight"]))
 
+    # Streak Logic
+    today_str = datetime.date.today().isoformat()
+    if default_data["last_visit"] != today_str:
+        if default_data["last_visit"] == (datetime.date.today() - datetime.timedelta(days=1)).isoformat():
+            default_data["streak"] += 1
+        elif default_data["last_visit"] < today_str: # Reset if missed a day, but not if same day
+             # Only reset if the gap is more than 1 day. 
+             # If last visit was yesterday, streak++ (handled above).
+             # If last visit was today, do nothing.
+             # If last visit was before yesterday, reset to 1.
+             last_visit_date = datetime.date.fromisoformat(default_data["last_visit"]) if default_data["last_visit"] else datetime.date.min
+             if (datetime.date.today() - last_visit_date).days > 1:
+                 default_data["streak"] = 1
+             elif default_data["streak"] == 0:
+                 default_data["streak"] = 1
+        default_data["last_visit"] = today_str
+
     if st.button("Save Profile"):
+        new_history_entry = {"date": today_str, "weight": weight, "bmi": calculate_bmi(weight, height_cm)}
+        # Append only if today's date isn't already the last entry, or update it
+        if not default_data["history"] or default_data["history"][-1]["date"] != today_str:
+            default_data["history"].append(new_history_entry)
+        else:
+            default_data["history"][-1] = new_history_entry
+
         user_data = {
-            "name": name,
-            "age": age,
-            "gender": gender,
-            "height": height_cm,
-            "weight": weight
+            "name": name, "age": age, "gender": gender, "height": height_cm, "weight": weight,
+            "history": default_data["history"], "streak": default_data["streak"], "last_visit": today_str,
+            "schedule": default_data.get("schedule", {})
         }
         with open("user_data.json", "w") as f:
             json.dump(user_data, f)
@@ -364,61 +473,149 @@ with st.sidebar:
 if name and height_cm > 0 and weight > 0:
     bmi = calculate_bmi(weight, height_cm)
     category = bmi_category(bmi)
+    
+    # Create Tabs
+    tab1, tab2, tab3, tab4 = st.tabs(["📊 Dashboard", "🏋️ Workouts", "🥗 Diet", "🤖 AI Coach"])
 
-    st.header("Health Report")
-    col1, col2 = st.columns(2)
+    # --- TAB 1: DASHBOARD ---
+    with tab1:
+        st.header(f"Hello, {name}!")
+        
+        # Badges
+        badges = check_badges(default_data["streak"], default_data["history"])
+        if badges:
+            st.write("### Achievements")
+            st.write(" ".join([f"`{b}`" for b in badges]))
+        
+        col1, col2, col3 = st.columns(3)
+        col1.metric("BMI", f"{bmi:.2f}", category)
+        col2.metric("Current Weight", f"{weight} kg")
+        col3.metric("Streak", f"{default_data['streak']} Days")
 
-    with col1:
-        st.write(f"**Name:** {name}")
-        st.write(f"**Age:** {age}")
-        st.write(f"**Gender:** {gender}")
+        # Progress Graph
+        st.subheader("Weight Progress")
+        if default_data["history"]:
+            df = pd.DataFrame(default_data["history"])
+            st.line_chart(df.set_index("date")["weight"])
+        else:
+            st.info("Save your profile to start tracking progress!")
 
-    with col2:
-        st.write(f"**BMI:** {bmi:.2f}")
-        st.write(f"**Category:** {category}")
+        # Water Reminder / Tracker
+        st.subheader("💧 Water Tracker")
+        if "water_count" not in st.session_state:
+            st.session_state.water_count = 0
+        
+        w_col1, w_col2 = st.columns([1, 3])
+        with w_col1:
+            if st.button("Drink Water 🥤"):
+                st.session_state.water_count += 1
+        with w_col2:
+            st.write(f"**Glasses today:** {st.session_state.water_count} / 8")
+            st.progress(min(st.session_state.water_count / 8, 1.0))
 
-    st.divider()
+        # PDF Download
+        st.divider()
+        if FPDF:
+            pdf_bytes = create_pdf(default_data, bmi, category, "Focus on consistency!")
+            if pdf_bytes:
+                st.download_button(
+                    label="📄 Download Health Report (PDF)",
+                    data=pdf_bytes,
+                    file_name="health_report.pdf",
+                    mime="application/pdf"
+                )
+        else:
+            st.warning("Install 'fpdf' to enable PDF downloads: `pip install fpdf`")
 
-    # Workout Section
-    st.header("Workout Recommendations")
-    display_gender_workout_tips(gender)
+    # --- TAB 2: WORKOUTS ---
+    with tab2:
+        st.header("Workout Recommendations")
+        display_gender_workout_tips(gender)
+        
+        # Workout Scheduler
+        with st.expander("📅 Weekly Workout Scheduler"):
+            schedule = default_data.get("schedule", {})
+            days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+            cols = st.columns(2)
+            updated_schedule = {}
+            for i, day in enumerate(days):
+                with cols[i % 2]:
+                    updated_schedule[day] = st.text_input(day, value=schedule.get(day, ""))
+            
+            if st.button("Save Schedule"):
+                default_data["schedule"] = updated_schedule
+                # Save to file logic repeated for simplicity or create a helper
+                with open("user_data.json", "w") as f:
+                    # Merge with existing data to not lose other fields
+                    full_data = default_data.copy()
+                    full_data["schedule"] = updated_schedule
+                    json.dump(full_data, f)
+                st.success("Schedule Updated!")
 
-    display_countdown_timer()
-    st.divider()
+        display_countdown_timer()
+        st.divider()
 
-    workout_choice = st.radio(
-        "Choose workout type:",
-        ["Gym", "Yoga"],
-        horizontal=True
-    )
+        workout_choice = st.radio("Choose workout type:", ["Gym", "Yoga"], horizontal=True)
+        if workout_choice == "Gym":
+            display_gym_workouts(gender)
+        else:
+            display_yoga_asanas(gender)
 
-    if workout_choice == "Gym":
-        display_gym_workouts(gender)
-    else:
-        display_yoga_asanas(gender)
+    # --- TAB 3: DIET ---
+    with tab3:
+        st.header("Diet & Nutrition")
+        
+        # Calorie Calculator
+        with st.expander("🔥 Daily Calorie Calculator"):
+            activity = st.selectbox("Activity Level", [
+                "Sedentary (little or no exercise)",
+                "Lightly active (1-3 days/week)",
+                "Moderately active (3-5 days/week)",
+                "Very active (6-7 days/week)",
+                "Super active (physical job)"
+            ])
+            daily_cals = calculate_calories(weight, height_cm, age, gender, activity)
+            st.info(f"Your estimated daily maintenance calories: **{daily_cals} kcal**")
 
-    st.divider()
+        # Meal Reminders (Static for now)
+        st.subheader("⏰ Meal Reminders")
+        st.caption("Suggested timings for your meals:")
+        st.write("🍳 **Breakfast:** 8:00 AM")
+        st.write("🥗 **Lunch:** 1:00 PM")
+        st.write("🍎 **Snack:** 4:30 PM")
+        st.write("🍲 **Dinner:** 8:00 PM")
+        st.divider()
 
-    # Diet Section
-    st.header("Diet Plan")
+        diet_view = st.radio("Choose diet plan type:", ["Daily (BMI Based)", "Weekly"], horizontal=True)
+        diet_choice = st.radio("Choose diet type:", ["Vegetarian", "Non-Vegetarian"], horizontal=True)
 
-    diet_view = st.radio(
-        "Choose diet plan type:",
-        ["Daily (BMI Based)", "Weekly"],
-        horizontal=True
-    )
+        if diet_view == "Daily (BMI Based)":
+            display_diet_plan(diet_choice, category, gender)
+        else:
+            display_weekly_diet_plan(diet_choice)
 
-    diet_choice = st.radio(
-        "Choose diet type:",
-        ["Vegetarian", "Non-Vegetarian"],
-        horizontal=True
-    )
+    # --- TAB 4: AI COACH ---
+    with tab4:
+        st.header("🤖 AI Fitness Coach")
+        st.write("Ask me anything about workouts, diet, or motivation!")
+        
+        # Chat Interface
+        if "messages" not in st.session_state:
+            st.session_state.messages = [{"role": "assistant", "content": "Hello! How can I help you get fit today?"}]
 
-    if diet_view == "Daily (BMI Based)":
-        display_diet_plan(diet_choice, category, gender)
-    else:
-        display_weekly_diet_plan(diet_choice)
+        for msg in st.session_state.messages:
+            with st.chat_message(msg["role"]):
+                st.write(msg["content"])
 
-    st.success("Thank you for using Fitness Advisor!")
+        if prompt := st.chat_input("Type your question here..."):
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            with st.chat_message("user"):
+                st.write(prompt)
+            
+            response = get_ai_response(prompt)
+            st.session_state.messages.append({"role": "assistant", "content": response})
+            with st.chat_message("assistant"):
+                st.write(response)
+
 else:
     st.info("👉 Please fill all details in the sidebar.")
