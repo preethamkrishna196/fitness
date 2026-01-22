@@ -1,5 +1,7 @@
 import streamlit as st
 import time
+import json
+import os
 
 # ---------------- Utility Functions ----------------
 def calculate_bmi(weight, height_cm):
@@ -329,11 +331,34 @@ st.title("Welcome to Fitness Advisor")
 # ---------------- Sidebar ----------------
 with st.sidebar:
     st.header("Enter Your Details")
-    name = st.text_input("Name")
-    age = st.number_input("Age", min_value=1, max_value=120)
-    gender = st.radio("Gender", ["Male", "Female"], horizontal=True)
-    height_cm = st.number_input("Height (cm)", min_value=1.0)
-    weight = st.number_input("Weight (kg)", min_value=1.0)
+
+    # Load saved data if exists
+    default_data = {"name": "", "age": 25, "gender": "Male", "height": 170.0, "weight": 60.0}
+    if os.path.exists("user_data.json"):
+        try:
+            with open("user_data.json", "r") as f:
+                default_data.update(json.load(f))
+        except Exception as e:
+            st.error(f"Error loading data: {e}")
+
+    name = st.text_input("Name", value=default_data["name"])
+    age = st.number_input("Age", min_value=1, max_value=120, value=int(default_data["age"]))
+    gender_index = 0 if default_data["gender"] == "Male" else 1
+    gender = st.radio("Gender", ["Male", "Female"], index=gender_index, horizontal=True)
+    height_cm = st.number_input("Height (cm)", min_value=1.0, value=float(default_data["height"]))
+    weight = st.number_input("Weight (kg)", min_value=1.0, value=float(default_data["weight"]))
+
+    if st.button("Save Profile"):
+        user_data = {
+            "name": name,
+            "age": age,
+            "gender": gender,
+            "height": height_cm,
+            "weight": weight
+        }
+        with open("user_data.json", "w") as f:
+            json.dump(user_data, f)
+        st.success("Profile saved!")
 
 # ---------------- Main Content ----------------
 if name and height_cm > 0 and weight > 0:
