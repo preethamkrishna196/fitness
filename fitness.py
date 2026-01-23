@@ -13,6 +13,11 @@ try:
 except ImportError:
     FPDF = None
 
+try:
+    import google.generativeai as genai
+except ImportError:
+    genai = None
+
 # ---------------- Utility Functions ----------------
 def calculate_bmi(weight, height_cm):
     height_m = height_cm / 100
@@ -360,8 +365,18 @@ def calculate_calories(weight, height, age, gender, activity_level):
     }
     return int(bmr * multipliers[activity_level])
 
-def get_ai_response(prompt):
-    # Simple rule-based AI response simulation
+def get_ai_response(prompt, api_key=None):
+    # Advanced AI using Google Gemini
+    if api_key and genai:
+        try:
+            genai.configure(api_key=api_key)
+            model = genai.GenerativeModel('gemini-pro')
+            response = model.generate_content(f"You are an expert fitness coach. Provide a helpful, concise answer to: {prompt}")
+            return response.text
+        except Exception as e:
+            return f"AI Error: {str(e)}"
+
+    # Fallback: Simple rule-based AI response simulation
     prompt = prompt.lower()
     if "weight" in prompt:
         return "To manage weight, focus on a caloric deficit for loss or surplus for gain, combined with consistent strength training."
@@ -679,6 +694,10 @@ if name and height_cm > 0 and weight > 0:
     with tab4:
         st.header("🤖 AI Fitness Coach")
         
+        api_key = st.text_input("Enter Google Gemini API Key (for Advanced AI)", type="password", help="Get your key at aistudio.google.com")
+        if not genai:
+            st.warning("Install `google-generativeai` to enable the advanced coach: `pip install google-generativeai`")
+
         st.write("Ask me anything about workouts, diet, or motivation!")
         
         # Chat Interface
@@ -694,7 +713,7 @@ if name and height_cm > 0 and weight > 0:
             with st.chat_message("user"):
                 st.write(prompt)
             
-            response = get_ai_response(prompt)
+            response = get_ai_response(prompt, api_key)
             st.session_state.messages.append({"role": "assistant", "content": response})
             with st.chat_message("assistant"):
                 st.write(response)
