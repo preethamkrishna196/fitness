@@ -6,6 +6,7 @@ import datetime
 import pandas as pd
 import random
 import hashlib
+import re
 
 try:
     from fpdf import FPDF
@@ -41,7 +42,7 @@ def add_bg_from_url():
         }
         h1, h2, h3, label, p {
             color: white !important;
-        }
+        }Can
         /* Custom button styles */
         div[data-testid="stButton"] > button {
             background-color: #007bff;
@@ -506,6 +507,9 @@ with st.sidebar:
             st.error(f"Error loading data: {e}")
 
     name = st.text_input("Name", value=default_data["name"])
+    if name and not re.match(r"^[A-Za-z\s]+$", name):
+        st.error("Name must contain only letters and spaces.")
+        name = ""
     age = st.number_input("Age", min_value=1, max_value=120, value=int(default_data["age"]))
     gender_index = 0 if default_data["gender"] == "Male" else 1
     gender = st.radio("Gender", ["Male", "Female"], index=gender_index, horizontal=True)
