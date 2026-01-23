@@ -6,6 +6,8 @@ import datetime
 import pandas as pd
 import random
 import hashlib
+import subprocess
+import sys
 import re
 
 try:
@@ -16,7 +18,11 @@ except ImportError:
 try:
     import google.generativeai as genai
 except ImportError:
-    genai = None
+    try:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "google-generativeai"])
+        import google.generativeai as genai
+    except Exception:
+        genai = None
 
 # ---------------- Utility Functions ----------------
 def calculate_bmi(weight, height_cm):
