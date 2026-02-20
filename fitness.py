@@ -593,7 +593,7 @@ with st.sidebar:
         st.rerun()
     st.divider()
 
-    page = st.radio("Navigate", ["Dashboard", "Input Form", "Workout Routine", "Nutrition Plan"])
+    page = st.radio("Navigate", ["Input Form", "Dashboard", "Workout Routine", "Nutrition Plan"])
 
 # ---------------- Main Content ----------------
 if page == "Input Form":
