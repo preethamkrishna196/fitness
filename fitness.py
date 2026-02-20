@@ -65,6 +65,12 @@ def add_bg_from_url():
             border-color: #cc0000;
             color: white;
         }
+        div[data-testid="stButton"] > button:disabled {
+            background-color: #ff0000;
+            border-color: #ff0000;
+            color: white;
+            opacity: 0.65;
+        }
         /* Animation */
         @keyframes pulse {
             0% { transform: scale(1); }
