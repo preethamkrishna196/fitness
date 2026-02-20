@@ -44,26 +44,38 @@ def add_bg_from_url():
         """
         <style>
         .stApp {
-            background-image: url("https://images.pexels.com/photos/841130/pexels-photo-841130.jpeg");
-            background-size: cover;
-            background-attachment: fixed;
+            background-color: black;
+            background-image: none;
         }
         [data-testid="stSidebar"] {
-            background-color: grey;
+            background-color: #1a1a1a;
         }
         h1, h2, h3, label, p {
             color: white !important;
-        }Can
+        }
         /* Custom button styles */
         div[data-testid="stButton"] > button {
-            background-color: #007bff;
+            background-color: #ff0000;
             color: white;
-            border-color: #007bff;
+            border-color: #ff0000;
         }
-        div[data-tstid="stButton"] > button:hover {
-            background-color: #0056b3;
-            border-color: #0056b3;
+        div[data-testid="stButton"] > button:hover {
+            background-color: #cc0000;
+            border-color: #cc0000;
             color: white;
+        }
+        /* Animation */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        .fitness-animate {
+            animation: pulse 2s infinite;
+            font-size: 80px;
+            text-align: center;
+            display: block;
+            margin-bottom: 20px;
         }
         </style>
         """,
@@ -439,6 +451,7 @@ def check_badges(streak, bmi_history):
 
 # ---------------- Main App ----------------
 st.set_page_config(page_title="Fitness Advisor", page_icon="🏋️")
+add_bg_from_url()
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
 if 'username' not in st.session_state:
@@ -453,6 +466,7 @@ def check_hashes(password, hashed_text):
     return False
 
 def login_page():
+    st.markdown('<div class="fitness-animate">🏋️</div>', unsafe_allow_html=True)
     st.title("Fitness Advisor Login")
     
     tab1, tab2 = st.tabs(["Login", "Sign Up"])
@@ -494,8 +508,6 @@ def login_page():
 if not st.session_state.logged_in:
     login_page()
     st.stop()
-
-add_bg_from_url()
 
 USER_DATA_FILE = f"user_data_{st.session_state.username}.json"
 
