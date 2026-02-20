@@ -9,7 +9,6 @@ import hashlib
 import subprocess
 import sys
 import re
-import plotly.graph_objects as go
 
 # ---------------- Utility Functions ----------------
 def calculate_bmi(weight, height_cm):
@@ -639,25 +638,6 @@ if name and height_cm > 0 and weight > 0:
         col1.metric("BMI", f"{bmi:.2f}", category)
         col2.metric("Current Weight", f"{weight} kg")
         col3.metric("Streak", f"{default_data['streak']} Days")
-
-        # BMI Gauge Chart
-        fig = go.Figure(go.Indicator(
-            mode="gauge+number",
-            value=bmi,
-            title={'text': f"BMI Category: {category}"},
-            gauge={
-                'axis': {'range': [10, 50]},
-                'bar': {'color': "darkblue"},
-                'steps': [
-                    {'range': [10, 18.5], 'color': "lightblue"},
-                    {'range': [18.5, 24.9], 'color': "lightgreen"},
-                    {'range': [24.9, 29.9], 'color': "orange"},
-                    {'range': [29.9, 50], 'color': "red"}
-                ],
-            }
-        ))
-        st.plotly_chart(fig, use_container_width=True)
-        st.caption("🔵 Underweight | 🟢 Normal | 🟠 Overweight | 🔴 Obese")
 
         # Progress Graph
         st.subheader("Weight Progress")
