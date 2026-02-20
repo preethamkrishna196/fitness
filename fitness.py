@@ -541,6 +541,49 @@ USER_DATA_FILE = f"user_data_{st.session_state.username}.json"
 
 st.title("Welcome to Fitness Advisor")
 
+# ---------------- Data Loading ----------------
+default_data = {
+    "name": "", "age": 25, "gender": "Male", 
+    "height": 170.0, "weight": 60.0, "goal": "General Health",
+    "history": [], "streak": 0, "last_visit": "",
+    "schedule": {"Monday": "", "Tuesday": "", "Wednesday": "", "Thursday": "", "Friday": "", "Saturday": "", "Sunday": ""}
+}
+
+if os.path.exists(USER_DATA_FILE):
+    try:
+        with open(USER_DATA_FILE, "r") as f:
+            default_data.update(json.load(f))
+    except Exception as e:
+        st.error(f"Error loading data: {e}")
+
+# Streak Logic
+today_str = datetime.date.today().isoformat()
+if default_data["last_visit"] != today_str:
+    if default_data["last_visit"] == (datetime.date.today() - datetime.timedelta(days=1)).isoformat():
+        default_data["streak"] += 1
+    elif default_data["last_visit"] < today_str:
+            last_visit_date = datetime.date.fromisoformat(default_data["last_visit"]) if default_data["last_visit"] else datetime.date.min
+            if (datetime.date.today() - last_visit_date).days > 1:
+                default_data["streak"] = 1
+            elif default_data["streak"] == 0:
+                default_data["streak"] = 1
+    default_data["last_visit"] = today_str
+
+# Extract variables
+name = default_data["name"]
+age = int(default_data["age"])
+gender = default_data["gender"]
+height_cm = float(default_data["height"])
+weight = float(default_data["weight"])
+goal = default_data["goal"]
+
+# Calculate BMI
+bmi = 0
+category = "Normal weight"
+if height_cm > 0 and weight > 0:
+    bmi = calculate_bmi(weight, height_cm)
+    category = bmi_category(bmi)
+
 # ---------------- Sidebar ----------------
 with st.sidebar:
     st.write(f"Logged in as: **{st.session_state.username}**")
@@ -550,82 +593,52 @@ with st.sidebar:
         st.rerun()
     st.divider()
 
-    st.header("Enter Your Details")
+    page = st.radio("Navigate", ["Dashboard", "Input Form", "Workout Routine", "Nutrition Plan"])
 
-    # Load saved data if exists
-    default_data = {
-        "name": "", "age": 25, "gender": "Male", 
-        "height": 170.0, "weight": 60.0, "goal": "General Health",
-        "history": [], "streak": 0, "last_visit": "",
-        "schedule": {"Monday": "", "Tuesday": "", "Wednesday": "", "Thursday": "", "Friday": "", "Saturday": "", "Sunday": ""}
-    }
+# ---------------- Main Content ----------------
+if page == "Input Form":
+    st.header("Edit Profile")
     
-    if os.path.exists(USER_DATA_FILE):
-        try:
-            with open(USER_DATA_FILE, "r") as f:
-                default_data.update(json.load(f))
-        except Exception as e:
-            st.error(f"Error loading data: {e}")
-
-    name = st.text_input("Name", value=default_data["name"])
-    if name and not re.match(r"^[A-Za-z ]+$", name):
+    new_name = st.text_input("Name", value=name)
+    if new_name and not re.match(r"^[A-Za-z ]+$", new_name):
         st.error("Name must contain only letters and spaces. No numbers or symbols allowed.")
-        name = ""
-    age = st.number_input("Age", min_value=1, max_value=120, value=int(default_data["age"]))
-    gender_index = 0 if default_data["gender"] == "Male" else 1
-    gender = st.radio("Gender", ["Male", "Female"], index=gender_index, horizontal=True)
+        new_name = ""
+        
+    new_age = st.number_input("Age", min_value=1, max_value=120, value=age)
+    
+    gender_index = 0 if gender == "Male" else 1
+    new_gender = st.radio("Gender", ["Male", "Female"], index=gender_index, horizontal=True)
 
     goal_options = ["Weight Loss", "Muscle Gain", "Endurance Training", "General Health"]
-    goal_index = goal_options.index(default_data.get("goal", "General Health"))
-    goal = st.selectbox("Your Fitness Goal", goal_options, index=goal_index)
+    try:
+        goal_index = goal_options.index(goal)
+    except ValueError:
+        goal_index = 3
+    new_goal = st.selectbox("Your Fitness Goal", goal_options, index=goal_index)
 
-    height_cm = st.number_input("Height (cm)", min_value=1.0, value=float(default_data["height"]))
-    weight = st.number_input("Weight (kg)", min_value=1.0, value=float(default_data["weight"]))
-
-    # Streak Logic
-    today_str = datetime.date.today().isoformat()
-    if default_data["last_visit"] != today_str:
-        if default_data["last_visit"] == (datetime.date.today() - datetime.timedelta(days=1)).isoformat():
-            default_data["streak"] += 1
-        elif default_data["last_visit"] < today_str: # Reset if missed a day, but not if same day
-             # Only reset if the gap is more than 1 day. 
-             # If last visit was yesterday, streak++ (handled above).
-             # If last visit was today, do nothing.
-             # If last visit was before yesterday, reset to 1.
-             last_visit_date = datetime.date.fromisoformat(default_data["last_visit"]) if default_data["last_visit"] else datetime.date.min
-             if (datetime.date.today() - last_visit_date).days > 1:
-                 default_data["streak"] = 1
-             elif default_data["streak"] == 0:
-                 default_data["streak"] = 1
-        default_data["last_visit"] = today_str
+    new_height = st.number_input("Height (cm)", min_value=1.0, value=height_cm)
+    new_weight = st.number_input("Weight (kg)", min_value=1.0, value=weight)
 
     if st.button("Save Profile"):
-        new_history_entry = {"date": today_str, "weight": weight, "bmi": calculate_bmi(weight, height_cm)}
-        # Append only if today's date isn't already the last entry, or update it
+        new_history_entry = {"date": today_str, "weight": new_weight, "bmi": calculate_bmi(new_weight, new_height)}
         if not default_data["history"] or default_data["history"][-1]["date"] != today_str:
             default_data["history"].append(new_history_entry)
         else:
             default_data["history"][-1] = new_history_entry
 
         user_data = {
-            "name": name, "age": age, "gender": gender, "height": height_cm, "weight": weight, "goal": goal,
+            "name": new_name, "age": new_age, "gender": new_gender, 
+            "height": new_height, "weight": new_weight, "goal": new_goal,
             "history": default_data["history"], "streak": default_data["streak"], "last_visit": today_str,
             "schedule": default_data.get("schedule", {})
         }
         with open(USER_DATA_FILE, "w") as f:
             json.dump(user_data, f)
         st.success("Profile saved!")
+        st.rerun()
 
-# ---------------- Main Content ----------------
-if name and height_cm > 0 and weight > 0:
-    bmi = calculate_bmi(weight, height_cm)
-    category = bmi_category(bmi)
-    
-    # Create Tabs
-    tab1, tab2, tab3 = st.tabs(["📊 Dashboard", "🏋️ Workouts", "🥗 Diet"])
-
-    # --- TAB 1: DASHBOARD ---
-    with tab1:
+elif page == "Dashboard":
+    if name and height_cm > 0 and weight > 0:
         st.header(f"Hello, {name}!")
         
         # Badges
@@ -659,9 +672,11 @@ if name and height_cm > 0 and weight > 0:
         with w_col2:
             st.write(f"**Glasses today:** {st.session_state.water_count} / 8")
             st.progress(min(st.session_state.water_count / 8, 1.0))
+    else:
+        st.info("👉 Please go to **Input Form** to fill your details.")
 
-    # --- TAB 2: WORKOUTS ---
-    with tab2:
+elif page == "Workout Routine":
+    if name and height_cm > 0 and weight > 0:
         st.header("Workout Recommendations")
         display_goal_workout_tips(goal)
         display_gender_workout_tips(gender)
@@ -678,9 +693,7 @@ if name and height_cm > 0 and weight > 0:
             
             if st.button("Save Schedule"):
                 default_data["schedule"] = updated_schedule
-                # Save to file logic repeated for simplicity or create a helper
                 with open(USER_DATA_FILE, "w") as f:
-                    # Merge with existing data to not lose other fields
                     full_data = default_data.copy()
                     full_data["schedule"] = updated_schedule
                     json.dump(full_data, f)
@@ -694,9 +707,11 @@ if name and height_cm > 0 and weight > 0:
             display_gym_workouts(gender)
         else:
             display_yoga_asanas(gender)
+    else:
+        st.info("👉 Please go to **Input Form** to fill your details.")
 
-    # --- TAB 3: DIET ---
-    with tab3:
+elif page == "Nutrition Plan":
+    if name and height_cm > 0 and weight > 0:
         st.header("Diet & Nutrition")
         
         # Calorie Calculator
@@ -719,7 +734,7 @@ if name and height_cm > 0 and weight > 0:
             
             st.metric(label=f"Your Daily Goal for {goal}", value=f"{goal_calories} kcal")
 
-        # Meal Reminders (Static for now)
+        # Meal Reminders
         st.subheader("⏰ Meal Reminders")
         st.caption("Suggested timings for your meals:")
         st.write("🍳 **Breakfast:** 8:00 AM")
@@ -748,6 +763,5 @@ if name and height_cm > 0 and weight > 0:
             display_diet_plan(diet_preference, category, gender, dietary_restrictions)
         else:
             display_weekly_diet_plan(diet_preference, dietary_restrictions)
-
-else:
-    st.info("👉 Please fill all details in the sidebar.")
+    else:
+        st.info("👉 Please go to **Input Form** to fill your details.")
