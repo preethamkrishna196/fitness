@@ -635,6 +635,16 @@ if page == "Input Form":
     new_height = st.number_input("Height (cm)", min_value=50.0, max_value=300.0, value=max(50.0, min(height_cm, 300.0)))
     new_weight = st.number_input("Weight (kg)", min_value=10.0, max_value=500.0, value=max(10.0, min(weight, 500.0)))
 
+    uploaded_pic = st.file_uploader("Upload Profile Picture", type=["jpg", "jpeg", "png"])
+    profile_pic = default_data.get("profile_pic", "")
+
+    if uploaded_pic:
+        if not os.path.exists("profile_pics"):
+            os.makedirs("profile_pics")
+        profile_pic = f"profile_pics/{st.session_state.username}_{uploaded_pic.name}"
+        with open(profile_pic, "wb") as f:
+            f.write(uploaded_pic.getbuffer())
+
     if st.button("Save Profile"):
         new_history_entry = {"date": today_str, "weight": new_weight, "bmi": calculate_bmi(new_weight, new_height)}
         if not default_data["history"] or default_data["history"][-1]["date"] != today_str:
@@ -646,7 +656,8 @@ if page == "Input Form":
             "name": new_name, "age": new_age, "gender": new_gender, 
             "height": new_height, "weight": new_weight, "goal": new_goal,
             "history": default_data["history"], "streak": default_data["streak"], "last_visit": today_str,
-            "schedule": default_data.get("schedule", {})
+            "schedule": default_data.get("schedule", {}),
+            "profile_pic": profile_pic
         }
         with open(USER_DATA_FILE, "w") as f:
             json.dump(user_data, f)
