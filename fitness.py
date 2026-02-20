@@ -44,21 +44,31 @@ def add_bg_from_url():
         """
         <style>
         .stApp {
+            background-image: url("https://images.pexels.com/photos/841130/pexels-photo-841130.jpeg");
+            background-size: cover;
+            background-attachment: fixed;
             background-color: black;
             background-image: none;
         }
         [data-testid="stSidebar"] {
+            background-color: grey;
             background-color: #1a1a1a;
         }
         h1, h2, h3, label, p {
             color: white !important;
+        }Can
         }
         /* Custom button styles */
         div[data-testid="stButton"] > button {
+            background-color: #007bff;
             background-color: #ff0000;
             color: white;
+            border-color: #007bff;
             border-color: #ff0000;
         }
+        div[data-tstid="stButton"] > button:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
         div[data-testid="stButton"] > button:hover {
             background-color: #cc0000;
             border-color: #cc0000;
@@ -508,6 +518,8 @@ def login_page():
 if not st.session_state.logged_in:
     login_page()
     st.stop()
+
+add_bg_from_url()
 
 USER_DATA_FILE = f"user_data_{st.session_state.username}.json"
 
