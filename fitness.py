@@ -15,15 +15,6 @@ try:
 except ImportError:
     FPDF = None
 
-try:
-    import google.generativeai as genai
-except ImportError:
-    try:
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "google-generativeai"])
-        import google.generativeai as genai
-    except Exception:
-        genai = None
-
 # ---------------- Utility Functions ----------------
 def calculate_bmi(weight, height_cm):
     height_m = height_cm / 100
@@ -390,32 +381,6 @@ def calculate_calories(weight, height, age, gender, activity_level):
     }
     return int(bmr * multipliers[activity_level])
 
-def get_ai_response(prompt, api_key=None):
-    # Advanced AI using Google Gemini
-    if api_key and genai:
-        try:
-            genai.configure(api_key=api_key)
-            model = genai.GenerativeModel('gemini-pro')
-            response = model.generate_content(f"You are an expert fitness coach. Provide a helpful, concise answer to: {prompt}")
-            return response.text
-        except Exception as e:
-            return f"AI Error: {str(e)}"
-
-    # Fallback: Simple rule-based AI response simulation
-    prompt = prompt.lower()
-    if "weight" in prompt:
-        return "To manage weight, focus on a caloric deficit for loss or surplus for gain, combined with consistent strength training."
-    elif "muscle" in prompt:
-        return "Building muscle requires progressive overload in your workouts and sufficient protein intake (1.6g-2.2g per kg of bodyweight)."
-    elif "diet" in prompt or "food" in prompt:
-        return "A balanced diet should include lean proteins, healthy fats, and complex carbohydrates. Avoid processed sugars."
-    elif "pain" in prompt or "hurt" in prompt:
-        return "If you're experiencing pain, please stop exercising immediately and consult a medical professional. Rest is crucial."
-    elif "hello" in prompt or "hi" in prompt:
-        return "Hello! I'm your AI Fitness Coach. How can I help you reach your goals today?"
-    else:
-        return "That's a great question. Consistency is key! Focus on your daily habits, stay hydrated, and get enough sleep."
-
 def create_pdf(user_data, bmi, category, advice):
     if FPDF is None:
         return None
@@ -598,7 +563,7 @@ if name and height_cm > 0 and weight > 0:
     category = bmi_category(bmi)
     
     # Create Tabs
-    tab1, tab2, tab3, tab4 = st.tabs(["📊 Dashboard", "🏋️ Workouts", "🥗 Diet", "🤖 AI Coach"])
+    tab1, tab2, tab3 = st.tabs(["📊 Dashboard", "🏋️ Workouts", "🥗 Diet"])
 
     # --- TAB 1: DASHBOARD ---
     with tab1:
@@ -716,34 +681,6 @@ if name and height_cm > 0 and weight > 0:
             display_diet_plan(diet_choice, category, gender)
         else:
             display_weekly_diet_plan(diet_choice)
-
-    # --- TAB 4: AI COACH ---
-    with tab4:
-        st.header("🤖 AI Fitness Coach")
-        
-        api_key = st.text_input("Enter Google Gemini API Key (for Advanced AI)", type="password", help="Get your key at aistudio.google.com")
-        if not genai:
-            st.warning("Install `google-generativeai` to enable the advanced coach: `pip install google-generativeai`")
-
-        st.write("Ask me anything about workouts, diet, or motivation!")
-        
-        # Chat Interface
-        if "messages" not in st.session_state:
-            st.session_state.messages = [{"role": "assistant", "content": "Hello! How can I help you get fit today?"}]
-
-        for msg in st.session_state.messages:
-            with st.chat_message(msg["role"]):
-                st.write(msg["content"])
-
-        if prompt := st.chat_input("Type your question here..."):
-            st.session_state.messages.append({"role": "user", "content": prompt})
-            with st.chat_message("user"):
-                st.write(prompt)
-            
-            response = get_ai_response(prompt, api_key)
-            st.session_state.messages.append({"role": "assistant", "content": response})
-            with st.chat_message("assistant"):
-                st.write(response)
 
 else:
     st.info("👉 Please fill all details in the sidebar.")
