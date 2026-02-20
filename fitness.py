@@ -475,6 +475,22 @@ def check_badges(streak, bmi_history):
         badges.append("🏆 First Step Taken")
     return badges
 
+def calculate_macros(calories, goal):
+    """Calculates macronutrient breakdown based on total calories and goal."""
+    macro_splits = {
+        "Weight Loss": {"protein": 0.4, "carbs": 0.3, "fat": 0.3},
+        "Muscle Gain": {"protein": 0.3, "carbs": 0.4, "fat": 0.3},
+        "Endurance Training": {"protein": 0.2, "carbs": 0.5, "fat": 0.3},
+        "General Health": {"protein": 0.3, "carbs": 0.4, "fat": 0.3}
+    }
+    split = macro_splits.get(goal, macro_splits["General Health"])
+
+    protein_grams = int((calories * split["protein"]) / 4)
+    carb_grams = int((calories * split["carbs"]) / 4)
+    fat_grams = int((calories * split["fat"]) / 9)
+
+    return {"protein": protein_grams, "carbs": carb_grams, "fat": fat_grams}
+
 # ---------------- Main App ----------------
 st.set_page_config(page_title="Fitness Advisor", page_icon="🏋️")
 add_bg_from_url()
@@ -733,6 +749,13 @@ elif page == "Nutrition Plan":
                 st.warning(f"For your goal of **{goal}**, you should aim for a caloric deficit. We suggest subtracting **{-adjustment} kcal**.")
             
             st.metric(label=f"Your Daily Goal for {goal}", value=f"{goal_calories} kcal")
+
+            st.subheader("Suggested Macronutrient Breakdown")
+            macros = calculate_macros(goal_calories, goal)
+            p_col, c_col, f_col = st.columns(3)
+            p_col.metric("Protein", f"{macros['protein']}g")
+            c_col.metric("Carbs", f"{macros['carbs']}g")
+            f_col.metric("Fat", f"{macros['fat']}g")
 
         # Meal Reminders
         st.subheader("⏰ Meal Reminders")
