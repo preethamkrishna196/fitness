@@ -616,8 +616,8 @@ if page == "Input Form":
         goal_index = 3
     new_goal = st.selectbox("Your Fitness Goal", goal_options, index=goal_index)
 
-    new_height = st.number_input("Height (cm)", min_value=1.0, value=height_cm)
-    new_weight = st.number_input("Weight (kg)", min_value=1.0, value=weight)
+    new_height = st.number_input("Height (cm)", min_value=50.0, max_value=300.0, value=max(50.0, min(height_cm, 300.0)))
+    new_weight = st.number_input("Weight (kg)", min_value=10.0, max_value=500.0, value=max(10.0, min(weight, 500.0)))
 
     if st.button("Save Profile"):
         new_history_entry = {"date": today_str, "weight": new_weight, "bmi": calculate_bmi(new_weight, new_height)}
