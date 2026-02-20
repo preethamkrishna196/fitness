@@ -47,8 +47,6 @@ def add_bg_from_url():
             background-image: url("https://images.pexels.com/photos/841130/pexels-photo-841130.jpeg");
             background-size: cover;
             background-attachment: fixed;
-            background-color: black;
-            background-image: none;
         }
         [data-testid="stSidebar"] {
             background-color: grey;
