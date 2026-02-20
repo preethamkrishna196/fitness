@@ -439,8 +439,6 @@ def check_badges(streak, bmi_history):
 
 # ---------------- Main App ----------------
 st.set_page_config(page_title="Fitness Advisor", page_icon="🏋️")
-add_bg_from_url()
-
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
 if 'username' not in st.session_state:
@@ -496,6 +494,8 @@ def login_page():
 if not st.session_state.logged_in:
     login_page()
     st.stop()
+
+add_bg_from_url()
 
 USER_DATA_FILE = f"user_data_{st.session_state.username}.json"
 
