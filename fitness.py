@@ -9,6 +9,7 @@ import hashlib
 import subprocess
 import sys
 import re
+import plotly.graph_objects as go
 
 # ---------------- Utility Functions ----------------
 def calculate_bmi(weight, height_cm):
@@ -76,12 +77,17 @@ def add_bg_from_url():
     )
 
 # ---------------- Diet Section (Daily BMI Based) ----------------
-def display_diet_plan(diet_type, bmi_cat, gender):
+def display_diet_plan(diet_type, bmi_cat, gender, restrictions):
     st.subheader(f"{diet_type} Daily Diet Plan")
 
     gender_note = "Higher calorie needs" if gender == "Male" else "Moderate calorie needs"
     st.caption(f"👤 {gender} • {bmi_cat} • {gender_note}")
 
+    # Display selected restrictions
+    if restrictions:
+        st.info(f"Applying restrictions: **{', '.join(restrictions)}**")
+
+    plans = {}
     if diet_type == "Vegetarian":
         plans = {
             "Underweight": {
@@ -109,7 +115,41 @@ def display_diet_plan(diet_type, bmi_cat, gender):
                 "Total": "≈1050 kcal | 70g protein"
             }
         }
-    else:
+    elif diet_type == "Vegan":
+        plans = {
+            "Underweight": {
+                "Breakfast": "Tofu Scramble + Avocado Toast",
+                "Lunch": "Lentil Soup + Brown Rice",
+                "Dinner": "Quinoa Bowl + Roasted Veggies",
+                "Total": "≈1850 kcal | 80g protein"
+            },
+            "Normal weight": {
+                "Breakfast": "Oatmeal + Berries + Seeds",
+                "Lunch": "Chickpea Salad Sandwich",
+                "Dinner": "Black Bean Burgers",
+                "Total": "≈1550 kcal | 75g protein"
+            },
+            "Overweight": {
+                "Breakfast": "Berry Smoothie + Protein Powder",
+                "Lunch": "Large Salad + Beans & Seeds",
+                "Dinner": "Vegetable Stir-fry + Tofu",
+                "Total": "≈1250 kcal | 70g protein"
+            },
+            "Obese": {
+                "Breakfast": "Fruit Bowl + Flax Seeds",
+                "Lunch": "Miso Soup + Edamame",
+                "Dinner": "Steamed Vegetables + Hummus",
+                "Total": "≈1000 kcal | 60g protein"
+            }
+        }
+    elif diet_type == "Keto":
+        plans = {
+            "Underweight": {"Breakfast": "Bacon, Eggs, Avocado", "Lunch": "Steak Salad", "Dinner": "Salmon + Asparagus", "Total": "≈2000 kcal | 120g protein"},
+            "Normal weight": {"Breakfast": "Cheese Omelette", "Lunch": "Chicken Breast + Broccoli", "Dinner": "Tuna Salad", "Total": "≈1600 kcal | 100g protein"},
+            "Overweight": {"Breakfast": "Scrambled Eggs", "Lunch": "Grilled Chicken Strips", "Dinner": "Zucchini Noodles + Pesto", "Total": "≈1300 kcal | 90g protein"},
+            "Obese": {"Breakfast": "Avocado with Salt & Pepper", "Lunch": "Lettuce Wraps + Ground Turkey", "Dinner": "Bone Broth", "Total": "≈1100 kcal | 80g protein"}
+        }
+    else: # Standard (Non-Vegetarian)
         plans = {
             "Underweight": {
                 "Breakfast": "4 Eggs + Milk",
@@ -137,12 +177,23 @@ def display_diet_plan(diet_type, bmi_cat, gender):
             }
         }
 
-    with st.expander("View Daily Diet Plan"):
-        for meal, value in plans[bmi_cat].items():
-            st.write(f"**{meal}:** {value}")
+    if bmi_cat in plans:
+        with st.expander("View Daily Diet Plan"):
+            for meal, value in plans[bmi_cat].items():
+                st.write(f"**{meal}:** {value}")
+    else:
+        st.warning("No specific plan available for this combination. Please consult a nutritionist.")
+
+    # Add warnings for restrictions
+    if "Gluten-Free" in restrictions:
+        st.warning("**Gluten-Free Note:** Please ensure ingredients like oats, bread, and grains are certified gluten-free. Substitute with alternatives like quinoa, rice, or gluten-free bread where necessary.")
+    if "Dairy-Free" in restrictions:
+        st.warning("**Dairy-Free Note:** Replace milk, cheese, and curd with dairy-free alternatives like almond milk, soy paneer (tofu), or coconut yogurt.")
+    if "Nut-Free" in restrictions:
+        st.warning("**Nut-Free Note:** Avoid nuts and seeds in meal suggestions. Be cautious of hidden nuts in sauces and dressings.")
 
 # ---------------- Weekly Diet Plan ----------------
-def display_weekly_diet_plan(diet_type):
+def display_weekly_diet_plan(diet_type, restrictions):
     st.subheader(f"🗓️ Weekly {diet_type} Diet Plan")
 
     weekly_plan = {
@@ -176,14 +227,44 @@ def display_weekly_diet_plan(diet_type):
         }
     }
 
+    # Add more diet types to weekly plan (example for Monday)
+    weekly_plan["Monday"]["Vegan"] = ["Tofu Scramble", "Lentil Soup + Rice", "Quinoa Bowl"]
+    weekly_plan["Monday"]["Keto"] = ["Eggs & Avocado", "Chicken Salad", "Steak & Asparagus"]
+    # In a real app, you'd fill this out for all days
+
     for day, meals in weekly_plan.items():
         with st.expander(day):
-            selected_meals = meals["Veg"] if diet_type == "Vegetarian" else meals["Non-Veg"]
+            key = "Non-Veg" # Default to Standard/Non-Veg
+            if diet_type == "Vegetarian":
+                key = "Veg"
+            elif diet_type == "Vegan":
+                key = "Vegan"
+            elif diet_type == "Keto":
+                key = "Keto"
+
+            if key not in meals:
+                st.warning(f"No weekly plan available for {diet_type} on {day}. Showing Non-Veg plan as a placeholder.")
+                key = "Non-Veg"
+
+            selected_meals = meals[key]
             st.write(f"**Breakfast:** {selected_meals[0]}")
             st.write(f"**Lunch:** {selected_meals[1]}")
             st.write(f"**Dinner:** {selected_meals[2]}")
+    
+    if restrictions:
+        st.info(f"Remember to adapt the weekly plan according to your restrictions: **{', '.join(restrictions)}**.")
 
 # ---------------- Workout Tips ----------------
+def display_goal_workout_tips(goal):
+    st.subheader("Tips for Your Goal")
+    tips = {
+        "Weight Loss": "Incorporate more cardiovascular exercise like running, cycling, or HIIT. Combine with full-body strength training to preserve muscle mass.",
+        "Muscle Gain": "Focus on progressive overload in your strength training. Ensure you're lifting heavy enough and getting adequate protein. Compound lifts like squats, deadlifts, and bench press are key.",
+        "Endurance Training": "Gradually increase the duration and intensity of your cardio sessions. Mix in long, slow distance training with some higher-intensity interval work.",
+        "General Health": "Aim for a balanced routine including 150 minutes of moderate cardio and 2 strength training sessions per week. Don't forget flexibility and mobility work like yoga or stretching."
+    }
+    st.info(tips.get(goal, "Select a goal to see personalized tips."))
+
 def display_gender_workout_tips(gender):
     st.subheader("Personalized Workout Tips")
     if gender == "Male":
@@ -360,6 +441,16 @@ def display_countdown_timer():
         timer_placeholder.metric("⏳ Time Remaining", f"{int(mins):02d}:{int(secs):02d}")
 
 # ---------------- New Features ----------------
+def adjust_calories_for_goal(tdee, goal):
+    adjustments = {
+        "Weight Loss": -500,
+        "Muscle Gain": 300,
+        "Endurance Training": 0,
+        "General Health": 0
+    }
+    adjustment = adjustments.get(goal, 0)
+    return tdee + adjustment, adjustment
+
 def calculate_calories(weight, height, age, gender, activity_level):
     # Mifflin-St Jeor Equation
     if gender == "Male":
@@ -368,11 +459,10 @@ def calculate_calories(weight, height, age, gender, activity_level):
         bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161
     
     multipliers = {
-        "Sedentary (little or no exercise)": 1.2,
-        "Lightly active (1-3 days/week)": 1.375,
-        "Moderately active (3-5 days/week)": 1.55,
-        "Very active (6-7 days/week)": 1.725,
-        "Super active (physical job)": 1.9
+        "Sedentary": 1.2,
+        "Lightly Active": 1.375,
+        "Moderately Active": 1.55,
+        "Very Active": 1.725
     }
     return int(bmr * multipliers[activity_level])
 
@@ -466,7 +556,7 @@ with st.sidebar:
     # Load saved data if exists
     default_data = {
         "name": "", "age": 25, "gender": "Male", 
-        "height": 170.0, "weight": 60.0, 
+        "height": 170.0, "weight": 60.0, "goal": "General Health",
         "history": [], "streak": 0, "last_visit": "",
         "schedule": {"Monday": "", "Tuesday": "", "Wednesday": "", "Thursday": "", "Friday": "", "Saturday": "", "Sunday": ""}
     }
@@ -485,6 +575,11 @@ with st.sidebar:
     age = st.number_input("Age", min_value=1, max_value=120, value=int(default_data["age"]))
     gender_index = 0 if default_data["gender"] == "Male" else 1
     gender = st.radio("Gender", ["Male", "Female"], index=gender_index, horizontal=True)
+
+    goal_options = ["Weight Loss", "Muscle Gain", "Endurance Training", "General Health"]
+    goal_index = goal_options.index(default_data.get("goal", "General Health"))
+    goal = st.selectbox("Your Fitness Goal", goal_options, index=goal_index)
+
     height_cm = st.number_input("Height (cm)", min_value=1.0, value=float(default_data["height"]))
     weight = st.number_input("Weight (kg)", min_value=1.0, value=float(default_data["weight"]))
 
@@ -514,7 +609,7 @@ with st.sidebar:
             default_data["history"][-1] = new_history_entry
 
         user_data = {
-            "name": name, "age": age, "gender": gender, "height": height_cm, "weight": weight,
+            "name": name, "age": age, "gender": gender, "height": height_cm, "weight": weight, "goal": goal,
             "history": default_data["history"], "streak": default_data["streak"], "last_visit": today_str,
             "schedule": default_data.get("schedule", {})
         }
@@ -545,6 +640,25 @@ if name and height_cm > 0 and weight > 0:
         col2.metric("Current Weight", f"{weight} kg")
         col3.metric("Streak", f"{default_data['streak']} Days")
 
+        # BMI Gauge Chart
+        fig = go.Figure(go.Indicator(
+            mode="gauge+number",
+            value=bmi,
+            title={'text': f"BMI Category: {category}"},
+            gauge={
+                'axis': {'range': [10, 50]},
+                'bar': {'color': "darkblue"},
+                'steps': [
+                    {'range': [10, 18.5], 'color': "lightblue"},
+                    {'range': [18.5, 24.9], 'color': "lightgreen"},
+                    {'range': [24.9, 29.9], 'color': "orange"},
+                    {'range': [29.9, 50], 'color': "red"}
+                ],
+            }
+        ))
+        st.plotly_chart(fig, use_container_width=True)
+        st.caption("🔵 Underweight | 🟢 Normal | 🟠 Overweight | 🔴 Obese")
+
         # Progress Graph
         st.subheader("Weight Progress")
         if default_data["history"]:
@@ -569,6 +683,7 @@ if name and height_cm > 0 and weight > 0:
     # --- TAB 2: WORKOUTS ---
     with tab2:
         st.header("Workout Recommendations")
+        display_goal_workout_tips(goal)
         display_gender_workout_tips(gender)
         
         # Workout Scheduler
@@ -607,14 +722,22 @@ if name and height_cm > 0 and weight > 0:
         # Calorie Calculator
         with st.expander("🔥 Daily Calorie Calculator"):
             activity = st.selectbox("Activity Level", [
-                "Sedentary (little or no exercise)",
-                "Lightly active (1-3 days/week)",
-                "Moderately active (3-5 days/week)",
-                "Very active (6-7 days/week)",
-                "Super active (physical job)"
+                "Sedentary",
+                "Lightly Active",
+                "Moderately Active",
+                "Very Active"
             ])
-            daily_cals = calculate_calories(weight, height_cm, age, gender, activity)
-            st.info(f"Your estimated daily maintenance calories: **{daily_cals} kcal**")
+            tdee = calculate_calories(weight, height_cm, age, gender, activity)
+            st.info(f"Your estimated daily maintenance calories (TDEE): **{tdee} kcal**")
+
+            goal_calories, adjustment = adjust_calories_for_goal(tdee, goal)
+
+            if adjustment > 0:
+                st.success(f"For your goal of **{goal}**, you should aim for a caloric surplus. We suggest adding **{adjustment} kcal**.")
+            elif adjustment < 0:
+                st.warning(f"For your goal of **{goal}**, you should aim for a caloric deficit. We suggest subtracting **{-adjustment} kcal**.")
+            
+            st.metric(label=f"Your Daily Goal for {goal}", value=f"{goal_calories} kcal")
 
         # Meal Reminders (Static for now)
         st.subheader("⏰ Meal Reminders")
@@ -625,13 +748,26 @@ if name and height_cm > 0 and weight > 0:
         st.write("🍲 **Dinner:** 8:00 PM")
         st.divider()
 
-        diet_view = st.radio("Choose diet plan type:", ["Daily (BMI Based)", "Weekly"], horizontal=True)
-        diet_choice = st.radio("Choose diet type:", ["Vegetarian", "Non-Vegetarian"], horizontal=True)
+        st.subheader("🍽️ Your Diet Plan")
+        c1, c2 = st.columns(2)
+        with c1:
+            diet_preference = st.selectbox(
+                "Primary Diet Style",
+                ["Standard (Non-Vegetarian)", "Vegetarian", "Vegan", "Keto"]
+            )
+        with c2:
+            dietary_restrictions = st.multiselect(
+                "Additional Restrictions",
+                ["Gluten-Free", "Dairy-Free", "Nut-Free"],
+                help="Select any dietary restrictions you have. The plans will be adjusted with notes."
+            )
+
+        diet_view = st.radio("Choose plan format:", ["Daily (BMI Based)", "Weekly"], horizontal=True)
 
         if diet_view == "Daily (BMI Based)":
-            display_diet_plan(diet_choice, category, gender)
+            display_diet_plan(diet_preference, category, gender, dietary_restrictions)
         else:
-            display_weekly_diet_plan(diet_choice)
+            display_weekly_diet_plan(diet_preference, dietary_restrictions)
 
 else:
     st.info("👉 Please fill all details in the sidebar.")
