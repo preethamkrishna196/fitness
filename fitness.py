@@ -528,8 +528,8 @@ with st.sidebar:
             st.error(f"Error loading data: {e}")
 
     name = st.text_input("Name", value=default_data["name"])
-    if name and not re.match(r"^[A-Za-z\s]+$", name):
-        st.error("Name must contain only letters and spaces.")
+    if name and not re.match(r"^[A-Za-z ]+$", name):
+        st.error("Name must contain only letters and spaces. No numbers or symbols allowed.")
         name = ""
     age = st.number_input("Age", min_value=1, max_value=120, value=int(default_data["age"]))
     gender_index = 0 if default_data["gender"] == "Male" else 1
