@@ -10,11 +10,6 @@ import subprocess
 import sys
 import re
 
-try:
-    from fpdf import FPDF
-except ImportError:
-    FPDF = None
-
 # ---------------- Utility Functions ----------------
 def calculate_bmi(weight, height_cm):
     height_m = height_cm / 100
@@ -381,36 +376,6 @@ def calculate_calories(weight, height, age, gender, activity_level):
     }
     return int(bmr * multipliers[activity_level])
 
-def create_pdf(user_data, bmi, category, advice):
-    if FPDF is None:
-        return None
-    
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
-    
-    pdf.set_font("Arial", 'B', 16)
-    pdf.cell(200, 10, txt="Fitness Advisor - Health Report", ln=1, align='C')
-    pdf.ln(10)
-    
-    pdf.set_font("Arial", size=12)
-    pdf.cell(200, 10, txt=f"Date: {datetime.date.today()}", ln=1)
-    pdf.cell(200, 10, txt=f"Name: {user_data['name']}", ln=1)
-    pdf.cell(200, 10, txt=f"Age: {user_data['age']} | Gender: {user_data['gender']}", ln=1)
-    pdf.cell(200, 10, txt=f"Height: {user_data['height']} cm | Weight: {user_data['weight']} kg", ln=1)
-    pdf.ln(10)
-    
-    pdf.set_font("Arial", 'B', 14)
-    pdf.cell(200, 10, txt=f"BMI: {bmi:.2f} ({category})", ln=1)
-    pdf.ln(5)
-    
-    pdf.set_font("Arial", size=12)
-    pdf.multi_cell(0, 10, txt=f"Workout Focus: {advice}")
-    pdf.ln(5)
-    pdf.multi_cell(0, 10, txt="Remember to stay hydrated and maintain a balanced diet!")
-    
-    return pdf.output(dest='S').encode('latin-1')
-
 def check_badges(streak, bmi_history):
     badges = []
     if streak >= 5:
@@ -600,20 +565,6 @@ if name and height_cm > 0 and weight > 0:
         with w_col2:
             st.write(f"**Glasses today:** {st.session_state.water_count} / 8")
             st.progress(min(st.session_state.water_count / 8, 1.0))
-
-        # PDF Download
-        st.divider()
-        if FPDF:
-            pdf_bytes = create_pdf(default_data, bmi, category, "Focus on consistency!")
-            if pdf_bytes:
-                st.download_button(
-                    label="📄 Download Health Report (PDF)",
-                    data=pdf_bytes,
-                    file_name="health_report.pdf",
-                    mime="application/pdf"
-                )
-        else:
-            st.warning("Install 'fpdf' to enable PDF downloads: `pip install fpdf`")
 
     # --- TAB 2: WORKOUTS ---
     with tab2:
