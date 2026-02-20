@@ -9,6 +9,8 @@ import hashlib
 import subprocess
 import sys
 import re
+import google.generativeai as genai
+
 
 # ---------------- Utility Functions ----------------
 def calculate_bmi(weight, height_cm):
@@ -74,6 +76,70 @@ def add_bg_from_url():
         """,
         unsafe_allow_html=True
     )
+
+# ---------------- AI Generation Functions ----------------
+def get_gemini_response(prompt):
+    """
+    Generates content using the Gemini API.
+    Uses st.secrets for the API key.
+    """
+    try:
+        # Ensure the API key is available
+        if "GEMINI_API_KEY" not in st.secrets:
+            st.error("Gemini API key not found. Please add it to your .streamlit/secrets.toml file.")
+            return None
+        
+        api_key = st.secrets["GEMINI_API_KEY"]
+        genai.configure(api_key=api_key)
+        
+        model = genai.GenerativeModel('gemini-pro')
+        response = model.generate_content(prompt)
+        return response.text
+    except Exception as e:
+        st.error(f"An error occurred while contacting the AI service: {e}")
+        return None
+
+def display_ai_diet_plan(goal, goal_calories, diet_preference, restrictions, gender):
+    st.subheader("✨ AI-Generated Diet Plan")
+    
+    prompt = (
+        f"You are a fitness and nutrition expert. Generate a personalized one-day meal plan based on the following details:\n"
+        f"- **Primary Goal:** {goal}\n"
+        f"- **Target Daily Calories:** Approximately {goal_calories} kcal\n"
+        f"- **Gender:** {gender}\n"
+        f"- **Diet Style:** {diet_preference}\n"
+        f"- **Dietary Restrictions:** {', '.join(restrictions) if restrictions else 'None'}\n\n"
+        f"Please provide a plan with Breakfast, Lunch, Dinner, and one Snack. For each meal, suggest food items and portion sizes. "
+        f"Conclude with an estimated total calorie and protein count for the day. "
+        f"Format the response using Markdown for readability (e.g., use headings for meals)."
+    )
+    
+    if st.button("Generate AI Diet Plan"):
+        with st.spinner("🤖 Our AI chef is crafting your meal plan..."):
+            ai_plan = get_gemini_response(prompt)
+            if ai_plan:
+                st.markdown(ai_plan)
+            else:
+                st.warning("Could not generate an AI plan at this time. Please try again later.")
+
+def display_ai_workout_plan(goal, gender, level, workout_type):
+    st.subheader(f"✨ AI-Generated {workout_type} Plan")
+    prompt = (
+        f"You are an expert fitness coach. Create a custom {workout_type} routine for one session based on these user details:\n"
+        f"- **Primary Goal:** {goal}\n"
+        f"- **Gender:** {gender}\n"
+        f"- **Fitness Level:** {level}\n\n"
+        f"If the workout type is 'Gym', suggest 4-6 exercises targeting different muscle groups, including sets and reps. "
+        f"If the workout type is 'Yoga', suggest 4-6 asanas, with a brief description of how to perform each one and its benefits. "
+        f"Format the response using Markdown for readability."
+    )
+    if st.button(f"Generate AI {workout_type} Plan"):
+        with st.spinner(f"🤖 Our AI coach is designing your {workout_type} session..."):
+            ai_plan = get_gemini_response(prompt)
+            if ai_plan:
+                st.markdown(ai_plan)
+            else:
+                st.warning("Could not generate an AI plan at this time. Please try again later.")
 
 # ---------------- Diet Section (Daily BMI Based) ----------------
 def display_diet_plan(diet_type, bmi_cat, gender, restrictions):
@@ -689,11 +755,19 @@ if name and height_cm > 0 and weight > 0:
         display_countdown_timer()
         st.divider()
 
-        workout_choice = st.radio("Choose workout type:", ["Gym", "Yoga"], horizontal=True)
-        if workout_choice == "Gym":
-            display_gym_workouts(gender)
-        else:
-            display_yoga_asanas(gender)
+        st.header("Workout Plans")
+        workout_plan_type = st.radio("Choose your plan:", ["Preset Plans", "✨ AI Generated Plan"], horizontal=True, key="workout_plan_type")
+
+        if workout_plan_type == "Preset Plans":
+            workout_choice = st.radio("Choose workout type:", ["Gym", "Yoga"], horizontal=True, key="preset_workout")
+            if workout_choice == "Gym":
+                display_gym_workouts(gender)
+            else:
+                display_yoga_asanas(gender)
+        else: # AI Generated
+            level_for_ai = st.radio("Select Level", ["beginner", "advanced"], index=0 if gender == "Female" else 1, format_func=lambda x: x.capitalize(), horizontal=True, key="ai_level")
+            ai_workout_type = st.radio("Choose workout type:", ["Gym", "Yoga"], horizontal=True, key="ai_workout")
+            display_ai_workout_plan(goal, gender, level_for_ai, ai_workout_type)
 
     # --- TAB 3: DIET ---
     with tab3:
@@ -742,12 +816,14 @@ if name and height_cm > 0 and weight > 0:
                 help="Select any dietary restrictions you have. The plans will be adjusted with notes."
             )
 
-        diet_view = st.radio("Choose plan format:", ["Daily (BMI Based)", "Weekly"], horizontal=True)
+        diet_view = st.radio("Choose plan format:", ["Daily (BMI Based)", "Weekly", "✨ AI Generated"], horizontal=True)
 
         if diet_view == "Daily (BMI Based)":
             display_diet_plan(diet_preference, category, gender, dietary_restrictions)
-        else:
+        elif diet_view == "Weekly":
             display_weekly_diet_plan(diet_preference, dietary_restrictions)
+        else: # AI Generated
+            display_ai_diet_plan(goal, goal_calories, diet_preference, dietary_restrictions, gender)
 
 else:
     st.info("👉 Please fill all details in the sidebar.")
