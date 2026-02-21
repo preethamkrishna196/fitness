@@ -531,7 +531,7 @@ def login_page():
             unsafe_allow_html=True
         )
 
-        tab1, tab2 = st.tabs(["Login", "Sign Up"])
+        tab1, tab2, tab3 = st.tabs(["Login", "Sign Up", "Forgot Password"])
         
         with tab1:
             st.subheader("Welcome Back")
@@ -543,7 +543,13 @@ def login_page():
                 else:
                     with open("users.json", "r") as f:
                         users = json.load(f)
-                    if username in users and check_hashes(password, users[username]):
+                    
+                    # Handle legacy (string) vs new (dict) format
+                    stored_pass = users.get(username)
+                    if isinstance(stored_pass, dict):
+                        stored_pass = stored_pass.get("password")
+
+                    if username in users and check_hashes(password, stored_pass):
                         st.session_state.logged_in = True
                         st.session_state.username = username
                         st.success("Logged in!")
@@ -555,19 +561,37 @@ def login_page():
             st.subheader("Create Account")
             new_user = st.text_input("New Username", key="signup_user")
             new_password = st.text_input("New Password", type='password', key="signup_pass")
+            
+            # Security Question
+            sec_q = st.selectbox("Security Question (for password recovery)", [
+                "What is the name of your first pet?",
+                "What is your mother's maiden name?",
+                "What was your first car?",
+                "What elementary school did you attend?",
+                "What is the name of the town where you were born?"
+            ], key="signup_sec_q")
+            sec_a = st.text_input("Security Answer", key="signup_sec_a")
+
             if st.button("Sign Up", use_container_width=True):
-                if not os.path.exists("users.json"):
-                    with open("users.json", "w") as f:
-                        json.dump({}, f)
-                with open("users.json", "r") as f:
-                    users = json.load(f)
-                if new_user in users:
-                    st.error("Username already exists.")
+                if not new_user or not new_password or not sec_a:
+                    st.error("Please fill in all fields.")
                 else:
-                    users[new_user] = make_hashes(new_password)
-                    with open("users.json", "w") as f:
-                        json.dump(users, f)
-                    st.success("Account created! Please login.")
+                    if not os.path.exists("users.json"):
+                        with open("users.json", "w") as f:
+                            json.dump({}, f)
+                    with open("users.json", "r") as f:
+                        users = json.load(f)
+                    if new_user in users:
+                        st.error("Username already exists.")
+                    else:
+                        users[new_user] = {
+                            "password": make_hashes(new_password),
+                            "question": sec_q,
+                            "answer": make_hashes(sec_a)
+                        }
+                        with open("users.json", "w") as f:
+                            json.dump(users, f)
+                        st.success("Account created! Please login.")
             
             st.markdown("<div style='text-align: center; color: white; margin: 10px 0;'>OR</div>", unsafe_allow_html=True)
             
@@ -581,6 +605,39 @@ def login_page():
             with s_col3:
                 if st.button("🐙 GitHub", key="github_signup", use_container_width=True):
                     st.info("GitHub signup feature coming soon!")
+
+        with tab3:
+            st.subheader("Reset Password")
+            reset_username = st.text_input("Enter Username", key="reset_username")
+            
+            if reset_username:
+                if os.path.exists("users.json"):
+                    with open("users.json", "r") as f:
+                        users = json.load(f)
+                    
+                    if reset_username in users:
+                        user_data = users[reset_username]
+                        # Check if user has security question set up
+                        if isinstance(user_data, dict) and "question" in user_data:
+                            st.info(f"Security Question: **{user_data['question']}**")
+                            reset_answer = st.text_input("Your Answer", key="reset_answer")
+                            new_reset_pass = st.text_input("New Password", type="password", key="new_reset_pass")
+                            
+                            if st.button("Reset Password", key="btn_reset", use_container_width=True):
+                                if check_hashes(reset_answer, user_data['answer']):
+                                    user_data['password'] = make_hashes(new_reset_pass)
+                                    users[reset_username] = user_data
+                                    with open("users.json", "w") as f:
+                                        json.dump(users, f)
+                                    st.success("Password updated successfully! Please login.")
+                                else:
+                                    st.error("Incorrect security answer.")
+                        else:
+                            st.warning("This account is not set up for password recovery.")
+                    else:
+                        st.error("Username not found.")
+                else:
+                    st.error("No users found.")
 
 if not st.session_state.logged_in:
     login_page()
