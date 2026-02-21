@@ -14,6 +14,10 @@ import ssl
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
+# ---------------- Configuration ----------------
+SYSTEM_EMAIL = "your_app_email@gmail.com"  # Replace with the sender email
+SYSTEM_PASSWORD = "your_app_password"      # Replace with the sender app password
+
 # ---------------- Utility Functions ----------------
 def calculate_bmi(weight, height_cm):
     height_m = height_cm / 100
@@ -774,9 +778,7 @@ with st.sidebar:
     
     st.divider()
     with st.expander("📧 Notification Settings"):
-        st.caption("Use a Google App Password if 2FA is on.")
-        st.session_state.sender_email = st.text_input("Sender Gmail", value=st.session_state.get("sender_email", ""))
-        st.session_state.sender_pass = st.text_input("App Password", type="password", value=st.session_state.get("sender_pass", ""))
+        st.caption("Enter your email to receive workout updates.")
         st.session_state.receiver_email = st.text_input("Receiver Email", value=st.session_state.get("receiver_email", ""))
     st.divider()
 
@@ -917,16 +919,18 @@ elif page == "Workout Routine":
                     st.success("Workout logged successfully!")
 
                     # Send Email
-                    if st.session_state.get("sender_email") and st.session_state.get("sender_pass") and st.session_state.get("receiver_email"):
+                    if st.session_state.get("receiver_email") and SYSTEM_EMAIL != "your_app_email@gmail.com":
                         subject = f"Fitness Update: {w_type} Completed! ✅"
                         body = f"Great job, {name}!\n\nYou just completed a {w_duration} minute {w_type} session burning approx {w_cal} calories.\n\nNotes: {w_notes}\n\nKeep up the streak!"
-                        success, msg = send_email_notification(st.session_state.sender_email, st.session_state.sender_pass, st.session_state.receiver_email, subject, body)
+                        success, msg = send_email_notification(SYSTEM_EMAIL, SYSTEM_PASSWORD, st.session_state.receiver_email, subject, body)
                         if success:
                             st.toast(msg)
                         else:
                             st.error(msg)
-                    elif not (st.session_state.get("sender_email") and st.session_state.get("sender_pass")):
-                        st.warning("Workout saved, but email not sent. Configure email in Sidebar.")
+                    elif not st.session_state.get("receiver_email"):
+                        st.warning("Workout saved. To receive emails, enter your email in the Sidebar.")
+                    elif SYSTEM_EMAIL == "your_app_email@gmail.com":
+                        st.warning("Workout saved. Email notification disabled (System Email not configured in code).")
 
         display_goal_workout_tips(goal)
         display_gender_workout_tips(gender)
