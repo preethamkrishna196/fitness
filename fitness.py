@@ -9,6 +9,10 @@ import hashlib
 import subprocess
 import sys
 import re
+import smtplib
+import ssl
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 # ---------------- Utility Functions ----------------
 def calculate_bmi(weight, height_cm):
@@ -74,6 +78,22 @@ def add_bg_from_url():
         """,
         unsafe_allow_html=True
     )
+
+def send_email_notification(sender_email, sender_password, receiver_email, subject, body):
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = sender_email
+        msg['To'] = receiver_email
+        msg['Subject'] = subject
+        msg.attach(MIMEText(body, 'plain'))
+
+        context = ssl.create_default_context()
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+            server.login(sender_email, sender_password)
+            server.sendmail(sender_email, receiver_email, msg.as_string())
+        return True, "Email sent successfully!"
+    except Exception as e:
+        return False, f"Error sending email: {e}"
 
 # ---------------- Diet Section (Daily BMI Based) ----------------
 def display_diet_plan(diet_type, bmi_cat, gender, restrictions):
@@ -701,7 +721,7 @@ st.title("Welcome to Fitness Advisor")
 default_data = {
     "name": "", "age": 25, "gender": "Male", 
     "height": 170.0, "weight": 60.0, "goal": "General Health",
-    "history": [], "streak": 0, "last_visit": "",
+    "history": [], "workout_log": [], "streak": 0, "last_visit": "",
     "schedule": {"Monday": "", "Tuesday": "", "Wednesday": "", "Thursday": "", "Friday": "", "Saturday": "", "Sunday": ""}
 }
 
@@ -711,6 +731,10 @@ if os.path.exists(USER_DATA_FILE):
             default_data.update(json.load(f))
     except Exception as e:
         st.error(f"Error loading data: {e}")
+
+# Ensure backward compatibility for workout_log
+if "workout_log" not in default_data:
+    default_data["workout_log"] = []
 
 # Streak Logic
 today_str = datetime.date.today().isoformat()
@@ -747,6 +771,13 @@ with st.sidebar:
         st.session_state.logged_in = False
         st.session_state.username = ""
         st.rerun()
+    
+    st.divider()
+    with st.expander("📧 Notification Settings"):
+        st.caption("Use a Google App Password if 2FA is on.")
+        st.session_state.sender_email = st.text_input("Sender Gmail", value=st.session_state.get("sender_email", ""))
+        st.session_state.sender_pass = st.text_input("App Password", type="password", value=st.session_state.get("sender_pass", ""))
+        st.session_state.receiver_email = st.text_input("Receiver Email", value=st.session_state.get("receiver_email", ""))
     st.divider()
 
     page = st.radio("Navigate", ["Input Form", "Dashboard", "Workout Routine", "Nutrition Plan"])
@@ -797,6 +828,7 @@ if page == "Input Form":
             "height": new_height, "weight": new_weight, "goal": new_goal,
             "history": default_data["history"], "streak": default_data["streak"], "last_visit": today_str,
             "schedule": default_data.get("schedule", {}),
+            "workout_log": default_data.get("workout_log", []),
             "profile_pic": profile_pic
         }
         with open(USER_DATA_FILE, "w") as f:
@@ -818,6 +850,14 @@ elif page == "Dashboard":
         col1.metric("BMI", f"{bmi:.2f}", category)
         col2.metric("Current Weight", f"{weight} kg")
         col3.metric("Streak", f"{default_data['streak']} Days")
+
+        # Workout History Table
+        st.subheader("🏋️ Recent Workouts")
+        if default_data.get("workout_log"):
+            w_df = pd.DataFrame(default_data["workout_log"])
+            st.dataframe(w_df.sort_values(by="date", ascending=False).head(5), use_container_width=True)
+        else:
+            st.info("No workouts logged yet. Go to 'Workout Routine' to log one!")
 
         # Progress Graph
         st.subheader("Weight Progress")
@@ -845,6 +885,49 @@ elif page == "Dashboard":
 elif page == "Workout Routine":
     if name and height_cm > 0 and weight > 0:
         st.header("Workout Recommendations")
+        
+        # Log Workout Section
+        with st.expander("📝 Log Completed Workout", expanded=True):
+            with st.form("log_workout_form"):
+                c1, c2 = st.columns(2)
+                with c1:
+                    w_type = st.selectbox("Activity Type", ["Gym", "Yoga", "Cardio", "Sports", "Home Workout"])
+                    w_duration = st.number_input("Duration (mins)", min_value=5, value=45, step=5)
+                with c2:
+                    w_cal = st.number_input("Calories Burned (approx)", min_value=0, value=200, step=10)
+                    w_date = st.date_input("Date", datetime.date.today())
+                
+                w_notes = st.text_area("Notes (e.g., 'Hit a PR on bench press')")
+                submit_log = st.form_submit_button("Log Workout & Notify")
+
+                if submit_log:
+                    log_entry = {
+                        "date": w_date.isoformat(),
+                        "type": w_type,
+                        "duration": w_duration,
+                        "calories": w_cal,
+                        "notes": w_notes
+                    }
+                    default_data["workout_log"].append(log_entry)
+                    
+                    # Save to file
+                    with open(USER_DATA_FILE, "w") as f:
+                        json.dump(default_data, f)
+                    
+                    st.success("Workout logged successfully!")
+
+                    # Send Email
+                    if st.session_state.get("sender_email") and st.session_state.get("sender_pass") and st.session_state.get("receiver_email"):
+                        subject = f"Fitness Update: {w_type} Completed! ✅"
+                        body = f"Great job, {name}!\n\nYou just completed a {w_duration} minute {w_type} session burning approx {w_cal} calories.\n\nNotes: {w_notes}\n\nKeep up the streak!"
+                        success, msg = send_email_notification(st.session_state.sender_email, st.session_state.sender_pass, st.session_state.receiver_email, subject, body)
+                        if success:
+                            st.toast(msg)
+                        else:
+                            st.error(msg)
+                    elif not (st.session_state.get("sender_email") and st.session_state.get("sender_pass")):
+                        st.warning("Workout saved, but email not sent. Configure email in Sidebar.")
+
         display_goal_workout_tips(goal)
         display_gender_workout_tips(gender)
         
