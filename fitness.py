@@ -1342,7 +1342,7 @@ elif page == "AI Chat Help":
         st.write("Ask me anything about fitness, diet, or weight loss!")
     with c2:
         if st.button("🗑️ Clear Chat"):
-            st.session_state.messages = []
+            st.session_state.messages = [{"role": "assistant", "content": "Chat cleared. How can I help you now?"}]
             st.rerun()
 
     with st.expander("📜 Chat History"):
@@ -1379,17 +1379,18 @@ elif page == "AI Chat Help":
 
     # Initialize chat history
     if "messages" not in st.session_state:
-        st.session_state.messages = []
+        st.session_state.messages = [{"role": "assistant", "content": "Hello! I am your AI Fitness Advisor. Ask me about workouts, diet plans, or general health tips!"}]
 
     # Display chat messages from history on app rerun
     for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
+        avatar = "👤" if message["role"] == "user" else "🤖"
+        with st.chat_message(message["role"], avatar=avatar):
             st.markdown(message["content"])
 
     # React to user input
     if prompt := st.chat_input("Type your question here..."):
         # Display user message in chat message container
-        st.chat_message("user").markdown(prompt)
+        st.chat_message("user", avatar="👤").markdown(prompt)
         # Add user message to chat history
         st.session_state.messages.append({"role": "user", "content": prompt})
 
@@ -1402,7 +1403,7 @@ elif page == "AI Chat Help":
         answer = get_smart_response(prompt, default_data)
 
         # Display assistant response in chat message container
-        with st.chat_message("assistant"):
+        with st.chat_message("assistant", avatar="🤖"):
             st.markdown(answer)
         # Add assistant response to chat history
         st.session_state.messages.append({"role": "assistant", "content": answer})
