@@ -1387,6 +1387,11 @@ elif page == "AI Chat Help":
         with st.chat_message(message["role"], avatar=avatar):
             st.markdown(message["content"])
 
+    # Voice Input
+    audio_value = st.audio_input("🎤 Record your question")
+    if audio_value:
+        st.info("Voice input received! (Transcription requires an external API like OpenAI Whisper)")
+
     # React to user input
     if prompt := st.chat_input("Type your question here..."):
         # Display user message in chat message container
