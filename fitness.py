@@ -79,6 +79,15 @@ def add_bg_from_url():
             display: block;
             margin-bottom: 20px;
         }
+        /* Light blue button */
+        .light-blue-button div[data-testid="stButton"] > button {
+            background-color: #3498db;
+            border-color: #3498db;
+        }
+        .light-blue-button div[data-testid="stButton"] > button:hover {
+            background-color: #2980b9; /* A darker shade for hover */
+            border-color: #2980b9;
+        }
         </style>
         """,
         unsafe_allow_html=True
@@ -1098,12 +1107,14 @@ elif page == "Dashboard":
         col5.metric("Current Weight", f"{weight} kg")
         col6.metric("Streak", f"{default_data['streak']} Days")
 
+        st.markdown('<div class="light-blue-button">', unsafe_allow_html=True)
         st.download_button(
             label="📥 Download My Fitness Plan",
             data=generate_fitness_plan_text(default_data),
             file_name=f"fitness_plan_{name}.txt",
             mime="text/plain"
         )
+        st.markdown('</div>', unsafe_allow_html=True)
 
         # Workout History Table
         st.subheader("🏋️ Recent Workouts")
@@ -1173,8 +1184,10 @@ elif page == "Workout Routine":
                     w_date = st.date_input("Date", datetime.date.today())
                 
                 w_notes = st.text_area("Notes (e.g., 'Hit a PR on bench press')")
+                st.markdown('<div class="light-blue-button">', unsafe_allow_html=True)
                 submit_log = st.form_submit_button("Log Workout & Notify")
-
+                st.markdown('</div>', unsafe_allow_html=True)
+                
                 if submit_log:
                     log_entry = {
                         "date": w_date.isoformat(),
