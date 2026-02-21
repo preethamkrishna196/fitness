@@ -601,7 +601,7 @@ def login_page():
                     with st.spinner("Authenticating with Google..."):
                         time.sleep(1.5)  # Simulate API call
                     
-                    g_user = "Google_User"
+                    g_user = "jane.doe.google"
                     if not os.path.exists("users.json"):
                         with open("users.json", "w") as f:
                             json.dump({}, f)
@@ -632,7 +632,7 @@ def login_page():
                     with st.spinner("Authenticating with GitHub..."):
                         time.sleep(1.5)  # Simulate API call
                     
-                    gh_user = "GitHub_User"
+                    gh_user = "john-dev-github"
                     if not os.path.exists("users.json"):
                         with open("users.json", "w") as f:
                             json.dump({}, f)
