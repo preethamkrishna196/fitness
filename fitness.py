@@ -675,6 +675,39 @@ QA_DATA = {
     "Is late night snacking bad?": "Yes, it may lead to weight gain."
 }
 
+def get_smart_response(question, user_data):
+    goal = user_data.get("goal", "Stay Fit")
+    question_lower = question.lower()
+    
+    # 1. Try to find a direct answer from the Knowledge Base
+    matches = difflib.get_close_matches(question, QA_DATA.keys(), n=1, cutoff=0.5)
+    base_answer = QA_DATA[matches[0]] if matches else None
+    
+    additional_tip = ""
+    
+    # 2. Analyze Topic & Generate Contextual Tip based on Goal
+    is_diet = any(w in question_lower for w in ["eat", "food", "diet", "drink", "sugar", "fat", "rice", "bread", "milk", "meal", "snack", "tea", "coffee", "water", "fasting"])
+    is_workout = any(w in question_lower for w in ["gym", "exercise", "workout", "run", "cardio", "weights", "muscle", "squat", "pushup", "walk", "jog", "yoga", "stretch"])
+    
+    if is_diet:
+        if goal in ["Weight Loss", "Fat Loss"]:
+            additional_tip = "📉 **Goal Tip:** Since you're aiming for fat loss, ensure you maintain a calorie deficit and watch portion sizes."
+        elif goal == "Muscle Gain":
+            additional_tip = "💪 **Goal Tip:** For muscle gain, prioritize protein with every meal to support recovery."
+    elif is_workout:
+        if goal in ["Weight Loss", "Fat Loss"]:
+            additional_tip = "🔥 **Goal Tip:** High-intensity interval training (HIIT) combined with consistency is very effective for your goal."
+        elif goal == "Muscle Gain":
+            additional_tip = "🏋️ **Goal Tip:** Focus on progressive overload—lifting slightly heavier or doing more reps over time."
+            
+    # 3. Construct Final Response
+    if base_answer:
+        return f"{base_answer}\n\n{additional_tip}" if additional_tip else base_answer
+    elif additional_tip:
+        return f"I don't have a specific answer for that, but here is some advice based on your goal:\n\n{additional_tip}"
+    else:
+        return f"I'm not sure about that. But keep going with your goal of **{goal}**! Try asking about specific foods or exercises."
+
 # ---------------- Main App ----------------
 st.set_page_config(page_title="Fitness Advisor", page_icon="🏋️")
 add_bg_from_url()
@@ -913,7 +946,7 @@ default_data = {
     "height": 170.0, "weight": 60.0, "goal": "Stay Fit", "activity_level": "Sedentary",
     "history": [], "workout_log": [], "streak": 0, "last_visit": "",
     "schedule": {"Monday": "", "Tuesday": "", "Wednesday": "", "Thursday": "", "Friday": "", "Saturday": "", "Sunday": ""},
-    "diet_preference": "Veg", "dietary_restrictions": []
+    "diet_preference": "Veg", "dietary_restrictions": [], "chat_log": []
 }
 
 if os.path.exists(USER_DATA_FILE):
@@ -926,6 +959,8 @@ if os.path.exists(USER_DATA_FILE):
 # Ensure backward compatibility for workout_log
 if "workout_log" not in default_data:
     default_data["workout_log"] = []
+if "chat_log" not in default_data:
+    default_data["chat_log"] = []
 
 # Streak Logic
 today_str = datetime.date.today().isoformat()
@@ -1284,8 +1319,47 @@ elif page == "Nutrition Plan":
 
 elif page == "AI Chat Help":
     st.header("🤖 Fitness Chat Assistant")
-    st.write("Ask me anything about fitness, diet, or weight loss!")
     
+    c1, c2 = st.columns([3, 1])
+    with c1:
+        st.write("Ask me anything about fitness, diet, or weight loss!")
+    with c2:
+        if st.button("🗑️ Clear Chat"):
+            st.session_state.messages = []
+            st.rerun()
+
+    with st.expander("📜 Chat History"):
+        if default_data.get("chat_log"):
+            # Deduplicate and show recent
+            seen = set()
+            unique_history = []
+            for q in reversed(default_data["chat_log"]):
+                if q not in seen:
+                    unique_history.append(q)
+                    seen.add(q)
+            
+            st.caption("Click a question to ask it again:")
+            for q in unique_history[:5]:
+                if st.button(q, key=f"hist_{q}"):
+                    st.session_state.messages.append({"role": "user", "content": q})
+                    
+                    answer = "I'm not sure about that. Try asking something else from the list!"
+                    matches = difflib.get_close_matches(q, QA_DATA.keys(), n=1, cutoff=0.5)
+                    if matches:
+                        answer = QA_DATA[matches[0]]
+                    
+                    st.session_state.messages.append({"role": "assistant", "content": answer})
+                    
+                    # Update log order
+                    if q in default_data["chat_log"]:
+                        default_data["chat_log"].remove(q)
+                    default_data["chat_log"].append(q)
+                    with open(USER_DATA_FILE, "w") as f:
+                        json.dump(default_data, f)
+                    st.rerun()
+        else:
+            st.info("No search history yet.")
+
     # Initialize chat history
     if "messages" not in st.session_state:
         st.session_state.messages = []
@@ -1302,14 +1376,13 @@ elif page == "AI Chat Help":
         # Add user message to chat history
         st.session_state.messages.append({"role": "user", "content": prompt})
 
+        # Save to chat log
+        default_data["chat_log"].append(prompt)
+        with open(USER_DATA_FILE, "w") as f:
+            json.dump(default_data, f)
+
         # Find answer
-        answer = "I'm not sure about that. Try asking something else from the list!"
-        
-        # Exact match or close match
-        matches = difflib.get_close_matches(prompt, QA_DATA.keys(), n=1, cutoff=0.5)
-        
-        if matches:
-            answer = QA_DATA[matches[0]]
+        answer = get_smart_response(prompt, default_data)
 
         # Display assistant response in chat message container
         with st.chat_message("assistant"):
