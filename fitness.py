@@ -568,6 +568,19 @@ def login_page():
                     with open("users.json", "w") as f:
                         json.dump(users, f)
                     st.success("Account created! Please login.")
+            
+            st.markdown("<div style='text-align: center; color: white; margin: 10px 0;'>OR</div>", unsafe_allow_html=True)
+            
+            s_col1, s_col2, s_col3 = st.columns(3)
+            with s_col1:
+                if st.button("🇬 Google", key="google_signup", use_container_width=True):
+                    st.info("Google signup feature coming soon!")
+            with s_col2:
+                if st.button("📧 Email", key="email_signup_opt", use_container_width=True):
+                    st.info("Please use the form above.")
+            with s_col3:
+                if st.button("🐙 GitHub", key="github_signup", use_container_width=True):
+                    st.info("GitHub signup feature coming soon!")
 
 if not st.session_state.logged_in:
     login_page()
