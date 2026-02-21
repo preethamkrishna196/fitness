@@ -508,44 +508,66 @@ def check_hashes(password, hashed_text):
     return False
 
 def login_page():
-    st.markdown('<div class="fitness-animate">🏋️</div>', unsafe_allow_html=True)
-    st.title("Fitness Advisor Login")
-    
-    tab1, tab2 = st.tabs(["Login", "Sign Up"])
-    
-    with tab1:
-        username = st.text_input("Username")
-        password = st.text_input("Password", type='password')
-        if st.button("Login"):
-            if not os.path.exists("users.json"):
-                st.error("No users found. Please sign up.")
-            else:
+    # Centered layout with columns
+    col1, col2, col3 = st.columns([1, 2, 1])
+
+    with col2:
+        st.markdown('<div class="fitness-animate">🏋️</div>', unsafe_allow_html=True)
+        st.markdown("<h1 style='text-align: center; color: white; text-shadow: 2px 2px 4px #000000;'>Fitness Advisor</h1>", unsafe_allow_html=True)
+        
+        # Add a semi-transparent background for readability
+        st.markdown(
+            """
+            <style>
+            div[data-testid="stTabs"] {
+                background-color: rgba(255, 255, 255, 0.1);
+                padding: 20px;
+                border-radius: 15px;
+                backdrop-filter: blur(10px);
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
+
+        tab1, tab2 = st.tabs(["Login", "Sign Up"])
+        
+        with tab1:
+            st.subheader("Welcome Back")
+            username = st.text_input("Username", key="login_user")
+            password = st.text_input("Password", type='password', key="login_pass")
+            if st.button("Login", use_container_width=True):
+                if not os.path.exists("users.json"):
+                    st.error("No users found. Please sign up.")
+                else:
+                    with open("users.json", "r") as f:
+                        users = json.load(f)
+                    if username in users and check_hashes(password, users[username]):
+                        st.session_state.logged_in = True
+                        st.session_state.username = username
+                        st.success("Logged in!")
+                        st.rerun()
+                    else:
+                        st.error("Incorrect Username or Password")
+
+        with tab2:
+            st.subheader("Create Account")
+            new_user = st.text_input("New Username", key="signup_user")
+            new_password = st.text_input("New Password", type='password', key="signup_pass")
+            if st.button("Sign Up", use_container_width=True):
+                if not os.path.exists("users.json"):
+                    with open("users.json", "w") as f:
+                        json.dump({}, f)
                 with open("users.json", "r") as f:
                     users = json.load(f)
-                if username in users and check_hashes(password, users[username]):
-                    st.session_state.logged_in = True
-                    st.session_state.username = username
-                    st.success("Logged in!")
-                    st.rerun()
+                if new_user in users:
+                    st.error("Username already exists.")
                 else:
-                    st.error("Incorrect Username or Password")
-
-    with tab2:
-        new_user = st.text_input("New Username")
-        new_password = st.text_input("New Password", type='password')
-        if st.button("Sign Up"):
-            if not os.path.exists("users.json"):
-                with open("users.json", "w") as f:
-                    json.dump({}, f)
-            with open("users.json", "r") as f:
-                users = json.load(f)
-            if new_user in users:
-                st.error("Username already exists.")
-            else:
-                users[new_user] = make_hashes(new_password)
-                with open("users.json", "w") as f:
-                    json.dump(users, f)
-                st.success("Account created! Please login.")
+                    users[new_user] = make_hashes(new_password)
+                    with open("users.json", "w") as f:
+                        json.dump(users, f)
+                    st.success("Account created! Please login.")
 
 if not st.session_state.logged_in:
     login_page()
