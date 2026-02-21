@@ -111,30 +111,34 @@ def display_diet_plan(diet_type, bmi_cat, gender, restrictions):
         st.info(f"Applying restrictions: **{', '.join(restrictions)}**")
 
     plans = {}
-    if diet_type == "Vegetarian":
+    if diet_type == "Veg":
         plans = {
             "Underweight": {
                 "Breakfast": "Oats + Milk + Banana",
                 "Lunch": "Rice + Dal + Paneer",
                 "Dinner": "Roti + Chickpeas",
+                "Snacks": "Fruit Smoothie + Nuts",
                 "Total": "≈1800 kcal | 90g protein"
             },
             "Normal weight": {
                 "Breakfast": "Paneer Sandwich + Milk",
                 "Lunch": "Dal + Rice",
                 "Dinner": "Roti + Soybean",
+                "Snacks": "Roasted Chana / Corn",
                 "Total": "≈1500 kcal | 85g protein"
             },
             "Overweight": {
                 "Breakfast": "Sprouts + Green Tea",
                 "Lunch": "Dal + Salad",
                 "Dinner": "Veg Soup + Paneer",
+                "Snacks": "Cucumber/Carrot Sticks",
                 "Total": "≈1200 kcal | 80g protein"
             },
             "Obese": {
                 "Breakfast": "Fruit Bowl",
                 "Lunch": "Mixed Veg + Dal",
                 "Dinner": "Soup + Salad",
+                "Snacks": "Green Tea + 2 Almonds",
                 "Total": "≈1050 kcal | 70g protein"
             }
         }
@@ -144,58 +148,59 @@ def display_diet_plan(diet_type, bmi_cat, gender, restrictions):
                 "Breakfast": "Tofu Scramble + Avocado Toast",
                 "Lunch": "Lentil Soup + Brown Rice",
                 "Dinner": "Quinoa Bowl + Roasted Veggies",
+                "Snacks": "Peanut Butter Toast",
                 "Total": "≈1850 kcal | 80g protein"
             },
             "Normal weight": {
                 "Breakfast": "Oatmeal + Berries + Seeds",
                 "Lunch": "Chickpea Salad Sandwich",
                 "Dinner": "Black Bean Burgers",
+                "Snacks": "Mixed Seeds + Fruit",
                 "Total": "≈1550 kcal | 75g protein"
             },
             "Overweight": {
                 "Breakfast": "Berry Smoothie + Protein Powder",
                 "Lunch": "Large Salad + Beans & Seeds",
                 "Dinner": "Vegetable Stir-fry + Tofu",
+                "Snacks": "Apple Slices",
                 "Total": "≈1250 kcal | 70g protein"
             },
             "Obese": {
                 "Breakfast": "Fruit Bowl + Flax Seeds",
                 "Lunch": "Miso Soup + Edamame",
                 "Dinner": "Steamed Vegetables + Hummus",
+                "Snacks": "Cucumber Slices",
                 "Total": "≈1000 kcal | 60g protein"
             }
         }
-    elif diet_type == "Keto":
-        plans = {
-            "Underweight": {"Breakfast": "Bacon, Eggs, Avocado", "Lunch": "Steak Salad", "Dinner": "Salmon + Asparagus", "Total": "≈2000 kcal | 120g protein"},
-            "Normal weight": {"Breakfast": "Cheese Omelette", "Lunch": "Chicken Breast + Broccoli", "Dinner": "Tuna Salad", "Total": "≈1600 kcal | 100g protein"},
-            "Overweight": {"Breakfast": "Scrambled Eggs", "Lunch": "Grilled Chicken Strips", "Dinner": "Zucchini Noodles + Pesto", "Total": "≈1300 kcal | 90g protein"},
-            "Obese": {"Breakfast": "Avocado with Salt & Pepper", "Lunch": "Lettuce Wraps + Ground Turkey", "Dinner": "Bone Broth", "Total": "≈1100 kcal | 80g protein"}
-        }
-    else: # Standard (Non-Vegetarian)
+    elif diet_type == "Non-Veg":
         plans = {
             "Underweight": {
                 "Breakfast": "4 Eggs + Milk",
                 "Lunch": "Chicken + Rice",
                 "Dinner": "Fish + Roti",
+                "Snacks": "Boiled Eggs + Toast",
                 "Total": "≈1900 kcal | 110g protein"
             },
             "Normal weight": {
                 "Breakfast": "3 Eggs + Toast",
                 "Lunch": "Chicken + Rice",
                 "Dinner": "Omelette + Veggies",
+                "Snacks": "Boiled Egg / Yogurt",
                 "Total": "≈1500 kcal | 95g protein"
             },
             "Overweight": {
                 "Breakfast": "Boiled Eggs",
                 "Lunch": "Grilled Chicken + Salad",
                 "Dinner": "Fish Soup",
+                "Snacks": "Egg White / Green Tea",
                 "Total": "≈1200 kcal | 85g protein"
             },
             "Obese": {
                 "Breakfast": "Fruit + Nuts",
                 "Lunch": "Grilled Fish + Salad",
                 "Dinner": "Soup",
+                "Snacks": "Black Coffee / Green Tea",
                 "Total": "≈1050 kcal | 75g protein"
             }
         }
@@ -258,12 +263,10 @@ def display_weekly_diet_plan(diet_type, restrictions):
     for day, meals in weekly_plan.items():
         with st.expander(day):
             key = "Non-Veg" # Default to Standard/Non-Veg
-            if diet_type == "Vegetarian":
+            if diet_type == "Veg":
                 key = "Veg"
             elif diet_type == "Vegan":
                 key = "Vegan"
-            elif diet_type == "Keto":
-                key = "Keto"
 
             if key not in meals:
                 st.warning(f"No weekly plan available for {diet_type} on {day}. Showing Non-Veg plan as a placeholder.")
@@ -282,9 +285,10 @@ def display_goal_workout_tips(goal):
     st.subheader("Tips for Your Goal")
     tips = {
         "Weight Loss": "Incorporate more cardiovascular exercise like running, cycling, or HIIT. Combine with full-body strength training to preserve muscle mass.",
+        "Fat Loss": "Focus on high-intensity interval training (HIIT) and maintaining a caloric deficit while keeping protein intake high.",
         "Muscle Gain": "Focus on progressive overload in your strength training. Ensure you're lifting heavy enough and getting adequate protein. Compound lifts like squats, deadlifts, and bench press are key.",
-        "Endurance Training": "Gradually increase the duration and intensity of your cardio sessions. Mix in long, slow distance training with some higher-intensity interval work.",
-        "General Health": "Aim for a balanced routine including 150 minutes of moderate cardio and 2 strength training sessions per week. Don't forget flexibility and mobility work like yoga or stretching."
+        "Increase Stamina": "Gradually increase the duration and intensity of your cardio sessions. Mix in long, slow distance training with some higher-intensity interval work.",
+        "Stay Fit": "Aim for a balanced routine including 150 minutes of moderate cardio and 2 strength training sessions per week. Don't forget flexibility and mobility work like yoga or stretching."
     }
     st.info(tips.get(goal, "Select a goal to see personalized tips."))
 
@@ -467,9 +471,10 @@ def display_countdown_timer():
 def adjust_calories_for_goal(tdee, goal):
     adjustments = {
         "Weight Loss": -500,
+        "Fat Loss": -500,
         "Muscle Gain": 300,
-        "Endurance Training": 0,
-        "General Health": 0
+        "Increase Stamina": 0,
+        "Stay Fit": 0
     }
     adjustment = adjustments.get(goal, 0)
     return tdee + adjustment, adjustment
@@ -503,11 +508,12 @@ def calculate_macros(calories, goal):
     """Calculates macronutrient breakdown based on total calories and goal."""
     macro_splits = {
         "Weight Loss": {"protein": 0.4, "carbs": 0.3, "fat": 0.3},
+        "Fat Loss": {"protein": 0.45, "carbs": 0.25, "fat": 0.3},
         "Muscle Gain": {"protein": 0.3, "carbs": 0.4, "fat": 0.3},
-        "Endurance Training": {"protein": 0.2, "carbs": 0.5, "fat": 0.3},
-        "General Health": {"protein": 0.3, "carbs": 0.4, "fat": 0.3}
+        "Increase Stamina": {"protein": 0.2, "carbs": 0.5, "fat": 0.3},
+        "Stay Fit": {"protein": 0.3, "carbs": 0.4, "fat": 0.3}
     }
-    split = macro_splits.get(goal, macro_splits["General Health"])
+    split = macro_splits.get(goal, macro_splits["Stay Fit"])
 
     protein_grams = int((calories * split["protein"]) / 4)
     carb_grams = int((calories * split["carbs"]) / 4)
@@ -724,7 +730,7 @@ st.title("Welcome to Fitness Advisor")
 # ---------------- Data Loading ----------------
 default_data = {
     "name": "", "age": 25, "gender": "Male", 
-    "height": 170.0, "weight": 60.0, "goal": "General Health",
+    "height": 170.0, "weight": 60.0, "goal": "Stay Fit", "activity_level": "Sedentary",
     "history": [], "workout_log": [], "streak": 0, "last_visit": "",
     "schedule": {"Monday": "", "Tuesday": "", "Wednesday": "", "Thursday": "", "Friday": "", "Saturday": "", "Sunday": ""}
 }
@@ -798,15 +804,23 @@ if page == "Input Form":
     gender_index = 0 if gender == "Male" else 1
     new_gender = st.radio("Gender", ["Male", "Female"], index=gender_index, horizontal=True)
 
-    goal_options = ["Weight Loss", "Muscle Gain", "Endurance Training", "General Health"]
+    goal_options = ["Weight Loss", "Muscle Gain", "Stay Fit", "Fat Loss", "Increase Stamina"]
     try:
         goal_index = goal_options.index(goal)
     except ValueError:
-        goal_index = 3
+        goal_index = 2
     new_goal = st.selectbox("Your Fitness Goal", goal_options, index=goal_index)
 
     new_height = st.number_input("Height (cm)", min_value=50.0, max_value=300.0, value=max(50.0, min(height_cm, 300.0)))
     new_weight = st.number_input("Weight (kg)", min_value=10.0, max_value=500.0, value=max(10.0, min(weight, 500.0)))
+
+    activity_options = ["Sedentary", "Lightly Active", "Moderately Active", "Very Active"]
+    current_activity = default_data.get("activity_level", "Sedentary")
+    try:
+        activity_index = activity_options.index(current_activity)
+    except ValueError:
+        activity_index = 0
+    new_activity_level = st.selectbox("Activity Level", activity_options, index=activity_index)
 
     uploaded_pic = st.file_uploader("Upload Profile Picture", type=["jpg", "jpeg", "png"])
     profile_pic = default_data.get("profile_pic", "")
@@ -827,7 +841,7 @@ if page == "Input Form":
 
         user_data = {
             "name": new_name, "age": new_age, "gender": new_gender, 
-            "height": new_height, "weight": new_weight, "goal": new_goal,
+            "height": new_height, "weight": new_weight, "goal": new_goal, "activity_level": new_activity_level,
             "history": default_data["history"], "streak": default_data["streak"], "last_visit": today_str,
             "schedule": default_data.get("schedule", {}),
             "workout_log": default_data.get("workout_log", []),
@@ -848,10 +862,25 @@ elif page == "Dashboard":
             st.write("### Achievements")
             st.write(" ".join([f"`{b}`" for b in badges]))
         
+        # Calculate BMR, TDEE, Target
+        if gender == "Male":
+            bmr_val = (10 * weight) + (6.25 * height_cm) - (5 * age) + 5
+        else:
+            bmr_val = (10 * weight) + (6.25 * height_cm) - (5 * age) - 161
+        
+        activity_lvl = default_data.get("activity_level", "Sedentary")
+        tdee_val = calculate_calories(weight, height_cm, age, gender, activity_lvl)
+        target_val, _ = adjust_calories_for_goal(tdee_val, goal)
+
         col1, col2, col3 = st.columns(3)
         col1.metric("BMI", f"{bmi:.2f}", category)
-        col2.metric("Current Weight", f"{weight} kg")
-        col3.metric("Streak", f"{default_data['streak']} Days")
+        col2.metric("BMR", f"{int(bmr_val)} kcal")
+        col3.metric("TDEE", f"{tdee_val} kcal")
+
+        col4, col5, col6 = st.columns(3)
+        col4.metric("Target Calories", f"{target_val} kcal", goal)
+        col5.metric("Current Weight", f"{weight} kg")
+        col6.metric("Streak", f"{default_data['streak']} Days")
 
         # Workout History Table
         st.subheader("🏋️ Recent Workouts")
@@ -1009,7 +1038,7 @@ elif page == "Nutrition Plan":
         with c1:
             diet_preference = st.selectbox(
                 "Primary Diet Style",
-                ["Standard (Non-Vegetarian)", "Vegetarian", "Vegan", "Keto"]
+                ["Veg", "Non-Veg", "Vegan"]
             )
         with c2:
             dietary_restrictions = st.multiselect(
