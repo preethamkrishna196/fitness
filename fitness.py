@@ -282,15 +282,59 @@ def display_weekly_diet_plan(diet_type, restrictions):
 
 # ---------------- Workout Tips ----------------
 def display_goal_workout_tips(goal):
-    st.subheader("Tips for Your Goal")
-    tips = {
-        "Weight Loss": "Incorporate more cardiovascular exercise like running, cycling, or HIIT. Combine with full-body strength training to preserve muscle mass.",
-        "Fat Loss": "Focus on high-intensity interval training (HIIT) and maintaining a caloric deficit while keeping protein intake high.",
-        "Muscle Gain": "Focus on progressive overload in your strength training. Ensure you're lifting heavy enough and getting adequate protein. Compound lifts like squats, deadlifts, and bench press are key.",
-        "Increase Stamina": "Gradually increase the duration and intensity of your cardio sessions. Mix in long, slow distance training with some higher-intensity interval work.",
-        "Stay Fit": "Aim for a balanced routine including 150 minutes of moderate cardio and 2 strength training sessions per week. Don't forget flexibility and mobility work like yoga or stretching."
+    st.subheader(f"Weekly Workout Schedule: {goal}")
+    
+    schedules = {
+        "Weight Loss": [
+            {"Day": "Monday", "Workout": "HIIT + Core"},
+            {"Day": "Tuesday", "Workout": "Full Body Strength"},
+            {"Day": "Wednesday", "Workout": "Cardio (Running/Cycling)"},
+            {"Day": "Thursday", "Workout": "Rest / Yoga"},
+            {"Day": "Friday", "Workout": "Circuit Training"},
+            {"Day": "Saturday", "Workout": "Active Recovery (Hike)"},
+            {"Day": "Sunday", "Workout": "Rest"}
+        ],
+        "Fat Loss": [
+            {"Day": "Monday", "Workout": "Cardio + Abs"},
+            {"Day": "Tuesday", "Workout": "Upper Body Strength"},
+            {"Day": "Wednesday", "Workout": "Lower Body Strength"},
+            {"Day": "Thursday", "Workout": "HIIT Cardio"},
+            {"Day": "Friday", "Workout": "Full Body Workout"},
+            {"Day": "Saturday", "Workout": "Active Recovery"},
+            {"Day": "Sunday", "Workout": "Rest"}
+        ],
+        "Muscle Gain": [
+            {"Day": "Monday", "Workout": "Chest & Triceps"},
+            {"Day": "Tuesday", "Workout": "Back & Biceps"},
+            {"Day": "Wednesday", "Workout": "Rest"},
+            {"Day": "Thursday", "Workout": "Legs & Shoulders"},
+            {"Day": "Friday", "Workout": "Upper Body Hypertrophy"},
+            {"Day": "Saturday", "Workout": "Lower Body Power"},
+            {"Day": "Sunday", "Workout": "Rest"}
+        ],
+        "Increase Stamina": [
+            {"Day": "Monday", "Workout": "Long Distance Run"},
+            {"Day": "Tuesday", "Workout": "Interval Training"},
+            {"Day": "Wednesday", "Workout": "Cross-Training (Swim/Cycle)"},
+            {"Day": "Thursday", "Workout": "Strength Training"},
+            {"Day": "Friday", "Workout": "Tempo Run"},
+            {"Day": "Saturday", "Workout": "Long Distance Run"},
+            {"Day": "Sunday", "Workout": "Rest"}
+        ],
+        "Stay Fit": [
+            {"Day": "Monday", "Workout": "Chest"},
+            {"Day": "Tuesday", "Workout": "Cardio"},
+            {"Day": "Wednesday", "Workout": "Legs"},
+            {"Day": "Thursday", "Workout": "Rest"},
+            {"Day": "Friday", "Workout": "Arms"},
+            {"Day": "Saturday", "Workout": "Full Body"},
+            {"Day": "Sunday", "Workout": "Yoga"}
+        ]
     }
-    st.info(tips.get(goal, "Select a goal to see personalized tips."))
+
+    plan = schedules.get(goal, schedules["Stay Fit"])
+    df = pd.DataFrame(plan)
+    st.table(df.set_index("Day"))
 
 def display_gender_workout_tips(gender):
     st.subheader("Personalized Workout Tips")
@@ -892,6 +936,27 @@ elif page == "Dashboard":
 
         # Progress Graph
         st.subheader("Weight Progress")
+        
+        with st.expander("⚖️ Weekly Check-in: Update Weight"):
+            checkin_weight = st.number_input("Current Weight (kg)", min_value=10.0, max_value=500.0, value=weight, key="checkin_w")
+            if st.button("Update Weight"):
+                new_bmi = calculate_bmi(checkin_weight, height_cm)
+                new_entry = {"date": today_str, "weight": checkin_weight, "bmi": new_bmi}
+                
+                if not default_data["history"]:
+                    default_data["history"].append(new_entry)
+                elif default_data["history"][-1]["date"] == today_str:
+                    default_data["history"][-1] = new_entry
+                else:
+                    default_data["history"].append(new_entry)
+                
+                default_data["weight"] = checkin_weight
+                with open(USER_DATA_FILE, "w") as f:
+                    json.dump(default_data, f)
+                st.toast("Weight updated successfully!")
+                time.sleep(1)
+                st.rerun()
+
         if default_data["history"]:
             df = pd.DataFrame(default_data["history"])
             st.line_chart(df.set_index("date")["weight"])
