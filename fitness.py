@@ -14,10 +14,12 @@ import ssl
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import difflib
+from openai import OpenAI
 
 # ---------------- Configuration ----------------
 SYSTEM_EMAIL = "your_app_email@gmail.com"  # Replace with the sender email
 SYSTEM_PASSWORD = "your_app_password"      # Replace with the sender app password
+OPENAI_API_KEY = "your_openai_api_key"     # Replace with your OpenAI API key
 
 # ---------------- Utility Functions ----------------
 def calculate_bmi(weight, height_cm):
@@ -1389,11 +1391,37 @@ elif page == "AI Chat Help":
 
     # Voice Input
     audio_value = st.audio_input("🎤 Record your question")
+    voice_prompt = None
+
     if audio_value:
-        st.info("Voice input received! (Transcription requires an external API like OpenAI Whisper)")
+        if OPENAI_API_KEY == "your_openai_api_key":
+            st.warning("⚠️ OpenAI API Key not configured. Please set OPENAI_API_KEY in the code.")
+        else:
+            try:
+                client = OpenAI(api_key=OPENAI_API_KEY)
+                with st.spinner("Transcribing audio..."):
+                    transcription = client.audio.transcriptions.create(
+                        model="whisper-1", 
+                        file=audio_value
+                    )
+                    voice_prompt = transcription.text
+                    st.success(f"Transcribed: {voice_prompt}")
+            except Exception as e:
+                st.error(f"Error transcribing audio: {e}")
 
     # React to user input
-    if prompt := st.chat_input("Type your question here..."):
+    chat_input = st.chat_input("Type your question here...")
+    
+    prompt = chat_input if chat_input else voice_prompt
+
+    # Prevent re-processing the same voice input on rerun
+    if voice_prompt and not chat_input:
+        if "last_voice_prompt" in st.session_state and st.session_state.last_voice_prompt == voice_prompt:
+            prompt = None
+        else:
+            st.session_state.last_voice_prompt = voice_prompt
+
+    if prompt:
         # Display user message in chat message container
         st.chat_message("user", avatar="👤").markdown(prompt)
         # Add user message to chat history
