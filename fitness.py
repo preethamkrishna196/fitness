@@ -80,13 +80,17 @@ def add_bg_from_url():
             margin-bottom: 20px;
         }
         /* Light blue button */
-        .light-blue-button div[data-testid="stButton"] > button {
-            background-color: #3498db;
-            border-color: #3498db;
+        .light-blue-button div[data-testid="stButton"] > button,
+        .light-blue-button div[data-testid="stDownloadButton"] > button,
+        .light-blue-button div[data-testid="stFormSubmitButton"] > button {
+            background-color: #3498db !important;
+            border-color: #3498db !important;
         }
-        .light-blue-button div[data-testid="stButton"] > button:hover {
-            background-color: #2980b9; /* A darker shade for hover */
-            border-color: #2980b9;
+        .light-blue-button div[data-testid="stButton"] > button:hover,
+        .light-blue-button div[data-testid="stDownloadButton"] > button:hover,
+        .light-blue-button div[data-testid="stFormSubmitButton"] > button:hover {
+            background-color: #2980b9 !important; /* A darker shade for hover */
+            border-color: #2980b9 !important;
         }
         </style>
         """,
