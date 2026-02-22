@@ -798,29 +798,32 @@ def login_page():
 
             st.markdown("<div style='text-align: center; color: white; margin: 10px 0;'>OR</div>", unsafe_allow_html=True)
             if st.button("🇬 Google", key="google_login", use_container_width=True):
-                with st.spinner("Authenticating with Google..."):
-                    time.sleep(1.5)  # Simulate API call
-                
-                g_user = "jane.doe.google"
-                if not os.path.exists("users.json"):
-                    with open("users.json", "w") as f:
-                        json.dump({}, f)
-                with open("users.json", "r") as f:
-                    users = json.load(f)
-                
-                if g_user not in users:
-                    users[g_user] = {
-                        "password": make_hashes("google_oauth_pass"),
-                        "question": "Auth Method",
-                        "answer": make_hashes("Google")
-                    }
-                    with open("users.json", "w") as f:
-                        json.dump(users, f)
-                
-                st.session_state.logged_in = True
-                st.session_state.username = g_user
-                st.success("Logged in with Google!")
-                st.rerun()
+                if not username:
+                    st.error("Please enter your username to simulate Google Login.")
+                else:
+                    with st.spinner("Authenticating with Google..."):
+                        time.sleep(1.5)  # Simulate API call
+                    
+                    g_user = username
+                    if not os.path.exists("users.json"):
+                        with open("users.json", "w") as f:
+                            json.dump({}, f)
+                    with open("users.json", "r") as f:
+                        users = json.load(f)
+                    
+                    if g_user not in users:
+                        users[g_user] = {
+                            "password": make_hashes("google_oauth_pass"),
+                            "question": "Auth Method",
+                            "answer": make_hashes("Google")
+                        }
+                        with open("users.json", "w") as f:
+                            json.dump(users, f)
+                    
+                    st.session_state.logged_in = True
+                    st.session_state.username = g_user
+                    st.success(f"Logged in as {g_user} via Google!")
+                    st.rerun()
 
         with tab2:
             st.subheader("Create Account")
@@ -863,30 +866,33 @@ def login_page():
             s_col1, s_col2, s_col3 = st.columns(3)
             with s_col1:
                 if st.button("🇬 Google", key="google_signup", use_container_width=True):
-                    with st.spinner("Authenticating with Google..."):
-                        time.sleep(1.5)  # Simulate API call
-                    
-                    g_user = "jane.doe.google"
-                    if not os.path.exists("users.json"):
-                        with open("users.json", "w") as f:
-                            json.dump({}, f)
-                    with open("users.json", "r") as f:
-                        users = json.load(f)
-                    
-                    if g_user not in users:
-                        users[g_user] = {
-                            "password": make_hashes("google_oauth_pass"),
-                            "question": "Auth Method",
-                            "answer": make_hashes("Google")
-                        }
-                        with open("users.json", "w") as f:
-                            json.dump(users, f)
-                    
-                    st.session_state.logged_in = True
-                    st.session_state.username = g_user
-                    st.success("Signed in with Google!")
-                    time.sleep(0.5)
-                    st.rerun()
+                    if not new_user:
+                        st.error("Please enter a username to sign up with Google.")
+                    else:
+                        with st.spinner("Authenticating with Google..."):
+                            time.sleep(1.5)  # Simulate API call
+                        
+                        g_user = new_user
+                        if not os.path.exists("users.json"):
+                            with open("users.json", "w") as f:
+                                json.dump({}, f)
+                        with open("users.json", "r") as f:
+                            users = json.load(f)
+                        
+                        if g_user not in users:
+                            users[g_user] = {
+                                "password": make_hashes("google_oauth_pass"),
+                                "question": "Auth Method",
+                                "answer": make_hashes("Google")
+                            }
+                            with open("users.json", "w") as f:
+                                json.dump(users, f)
+                        
+                        st.session_state.logged_in = True
+                        st.session_state.username = g_user
+                        st.success(f"Signed in as {g_user} via Google!")
+                        time.sleep(0.5)
+                        st.rerun()
 
             with s_col2:
                 if st.button("📧 Email", key="email_signup_opt", use_container_width=True):
@@ -894,30 +900,33 @@ def login_page():
 
             with s_col3:
                 if st.button("🐙 GitHub", key="github_signup", use_container_width=True):
-                    with st.spinner("Authenticating with GitHub..."):
-                        time.sleep(1.5)  # Simulate API call
-                    
-                    gh_user = "john-dev-github"
-                    if not os.path.exists("users.json"):
-                        with open("users.json", "w") as f:
-                            json.dump({}, f)
-                    with open("users.json", "r") as f:
-                        users = json.load(f)
-                    
-                    if gh_user not in users:
-                        users[gh_user] = {
-                            "password": make_hashes("github_oauth_pass"),
-                            "question": "Auth Method",
-                            "answer": make_hashes("GitHub")
-                        }
-                        with open("users.json", "w") as f:
-                            json.dump(users, f)
-                    
-                    st.session_state.logged_in = True
-                    st.session_state.username = gh_user
-                    st.success("Signed in with GitHub!")
-                    time.sleep(0.5)
-                    st.rerun()
+                    if not new_user:
+                        st.error("Please enter a username to sign up with GitHub.")
+                    else:
+                        with st.spinner("Authenticating with GitHub..."):
+                            time.sleep(1.5)  # Simulate API call
+                        
+                        gh_user = new_user
+                        if not os.path.exists("users.json"):
+                            with open("users.json", "w") as f:
+                                json.dump({}, f)
+                        with open("users.json", "r") as f:
+                            users = json.load(f)
+                        
+                        if gh_user not in users:
+                            users[gh_user] = {
+                                "password": make_hashes("github_oauth_pass"),
+                                "question": "Auth Method",
+                                "answer": make_hashes("GitHub")
+                            }
+                            with open("users.json", "w") as f:
+                                json.dump(users, f)
+                        
+                        st.session_state.logged_in = True
+                        st.session_state.username = gh_user
+                        st.success(f"Signed in as {gh_user} via GitHub!")
+                        time.sleep(0.5)
+                        st.rerun()
 
         with tab3:
             st.subheader("Reset Password")
