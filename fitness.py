@@ -1051,6 +1051,8 @@ with st.sidebar:
     if st.button("Logout"):
         st.session_state.logged_in = False
         st.session_state.username = ""
+        if "chat_suggestions" in st.session_state:
+            del st.session_state["chat_suggestions"]
         st.rerun()
     
     st.divider()
@@ -1467,13 +1469,10 @@ elif page == "AI Chat Help":
             st.rerun()
 
     st.caption("💡 Or try one of these suggestions:")
-    suggestions = [
-        "How to reduce belly fat?",
-        "Can I eat rice during weight loss?",
-        "Daily workout for beginners",
-        "Best diet for fat loss",
-        "Is walking enough to lose fat?"
-    ]
+    
+    if "chat_suggestions" not in st.session_state:
+        st.session_state.chat_suggestions = random.sample(list(QA_DATA.keys()), 5)
+    suggestions = st.session_state.chat_suggestions
 
     cols = st.columns(5)
 
