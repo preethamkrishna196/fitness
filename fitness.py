@@ -697,6 +697,11 @@ CLARIFICATION_QUESTIONS = {
     "Stay Fit": ["How active are you currently?", "Do you prefer yoga or cardio?", "How is your sleep quality?"]
 }
 
+def stream_response(response):
+    for word in response.split():
+        yield word + " "
+        time.sleep(0.03)
+
 def get_smart_response(question, user_data):
     goal = user_data.get("goal", "Stay Fit")
     question_lower = question.lower()
@@ -1526,7 +1531,7 @@ elif page == "AI Chat Help":
         st.info("Voice input received! (Transcription requires an external API like OpenAI Whisper)")
 
     # React to user input
-    prompt = st.chat_input("Type your question here...")
+    prompt = st.chat_input("Ask your fitness coach 💬")
 
     # Check if a prompt was set by a suggestion button in the previous run.
     if "user_prompt" in st.session_state:
@@ -1544,11 +1549,12 @@ elif page == "AI Chat Help":
         with open(USER_DATA_FILE, "w") as f:
             json.dump(default_data, f)
 
-        # Find answer
-        answer = get_smart_response(prompt, default_data)
-
         # Display assistant response in chat message container
         with st.chat_message("assistant", avatar="🤖"):
-            st.markdown(answer)
+            with st.status("Thinking...", expanded=True) as status:
+                time.sleep(0.5)
+                answer = get_smart_response(prompt, default_data)
+                status.update(label="Response Ready", state="complete", expanded=False)
+            st.write_stream(stream_response(answer))
         # Add assistant response to chat history
         st.session_state.messages.append({"role": "assistant", "content": answer})
