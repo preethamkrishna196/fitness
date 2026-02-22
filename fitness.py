@@ -1461,6 +1461,23 @@ elif page == "AI Chat Help":
             st.session_state.messages = [{"role": "assistant", "content": "Chat cleared. How can I help you now?"}]
             st.rerun()
 
+    st.caption("💡 Or try one of these suggestions:")
+    suggestions = [
+        "How to reduce belly fat?",
+        "Can I eat rice during weight loss?",
+        "Daily workout for beginners",
+        "Best diet for fat loss",
+        "Is walking enough to lose fat?"
+    ]
+
+    cols = st.columns(5)
+
+    for i, s in enumerate(suggestions):
+        # When a suggestion button is clicked, set 'user_prompt' in the session state.
+        # The button click itself will trigger a rerun of the script.
+        if cols[i].button(s, key=f"suggestion_{i}"):
+            st.session_state.user_prompt = s
+
     with st.expander("📜 Chat History"):
         if default_data.get("chat_log"):
             # Deduplicate and show recent
@@ -1509,7 +1526,14 @@ elif page == "AI Chat Help":
         st.info("Voice input received! (Transcription requires an external API like OpenAI Whisper)")
 
     # React to user input
-    if prompt := st.chat_input("Type your question here..."):
+    prompt = st.chat_input("Type your question here...")
+
+    # Check if a prompt was set by a suggestion button in the previous run.
+    if "user_prompt" in st.session_state:
+        prompt = st.session_state.user_prompt
+        del st.session_state.user_prompt # Clear the state to prevent re-triggering
+
+    if prompt:
         # Display user message in chat message container
         st.chat_message("user", avatar="👤").markdown(prompt)
         # Add user message to chat history
