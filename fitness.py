@@ -697,10 +697,30 @@ CLARIFICATION_QUESTIONS = {
     "Stay Fit": ["How active are you currently?", "Do you prefer yoga or cardio?", "How is your sleep quality?"]
 }
 
-def stream_response(response):
+def stream_response(response, speed=0.03):
     for word in response.split():
         yield word + " "
-        time.sleep(0.03)
+        time.sleep(speed)
+
+def check_password_strength(password):
+    strength = 0
+    feedback = []
+    if not password:
+        return 0, "", "black"
+    if len(password) < 8: feedback.append("at least 8 characters")
+    else: strength += 1
+    if not re.search(r"[A-Z]", password): feedback.append("an uppercase letter")
+    else: strength += 1
+    if not re.search(r"[a-z]", password): feedback.append("a lowercase letter")
+    else: strength += 1
+    if not re.search(r"[0-9]", password): feedback.append("a number")
+    else: strength += 1
+    if not re.search(r"[\W_]", password): feedback.append("a special character")
+    else: strength += 1
+
+    if strength == 5: return 5, "🟢 Strong password", "green"
+    elif strength >= 3: return strength, f"🟡 Medium. Consider adding: {', '.join(feedback)}", "orange"
+    return strength, f"🔴 Weak. Missing: {', '.join(feedback)}", "red"
 
 def get_smart_response(question, user_data):
     goal = user_data.get("goal", "Stay Fit")
@@ -834,6 +854,12 @@ def login_page():
             st.subheader("Create Account")
             new_user = st.text_input("New Username", key="signup_user")
             new_password = st.text_input("New Password", type='password', key="signup_pass")
+            if new_password:
+                strength, message, color = check_password_strength(new_password)
+                st.progress(strength / 5)
+                st.markdown(f"<p style='color:{color}; font-size: small;'>{message}</p>", unsafe_allow_html=True)
+            else:
+                st.progress(0)
             
             # Security Question
             sec_q = st.selectbox("Security Question (for password recovery)", [
@@ -981,7 +1007,7 @@ default_data = {
     "name": "", "age": 25, "gender": "Male", 
     "height": 170.0, "weight": 60.0, "goal": "Stay Fit", "activity_level": "Sedentary",
     "history": [], "workout_log": [], "streak": 0, "last_visit": "",
-    "schedule": {},
+    "schedule": {}, "target_weight": 0.0,
     "diet_preference": "Veg", "dietary_restrictions": [], "chat_log": [],
     "clarification_answers": {}, "calorie_offset": 0
 }
@@ -1059,6 +1085,8 @@ with st.sidebar:
         with st.expander("📧 Notification Settings"):
             st.caption("Enter your email to receive workout updates.")
             st.session_state.receiver_email = st.text_input("Receiver Email", value=st.session_state.get("receiver_email", ""))
+        with st.expander("⚙️ AI Chat Settings"):
+            st.session_state.ai_speed = st.slider("AI Typing Speed", min_value=0.0, max_value=0.1, value=st.session_state.get("ai_speed", 0.03), step=0.01, format="%.2fs/word")
         st.divider()
         page = st.radio("Navigate", ["Dashboard", "Workout Routine", "Nutrition Plan", "AI Chat Help", "Profile Settings"])
     else:
@@ -1090,6 +1118,7 @@ if current_step == "profile" or page == "Profile Settings":
 
     new_height = st.number_input("Height (cm)", min_value=50.0, max_value=300.0, value=max(50.0, min(height_cm, 300.0)))
     new_weight = st.number_input("Weight (kg)", min_value=10.0, max_value=500.0, value=max(10.0, min(weight, 500.0)))
+    new_target_weight = st.number_input("Target Weight (kg)", min_value=0.0, max_value=500.0, value=default_data.get("target_weight", 0.0), help="Set to 0 to disable goal line on chart.")
 
     activity_options = ["Sedentary", "Lightly Active", "Moderately Active", "Very Active"]
     current_activity = default_data.get("activity_level", "Sedentary")
@@ -1119,7 +1148,7 @@ if current_step == "profile" or page == "Profile Settings":
         user_data = {
             "name": new_name, "age": new_age, "gender": new_gender, 
             "height": new_height, "weight": new_weight, "goal": new_goal, "activity_level": new_activity_level,
-            "history": default_data["history"], "streak": default_data["streak"], "last_visit": today_str,
+            "history": default_data["history"], "streak": default_data["streak"], "last_visit": today_str, "target_weight": new_target_weight,
             "schedule": default_data.get("schedule", {}),
             "workout_log": default_data.get("workout_log", []),
             "profile_pic": profile_pic,
@@ -1130,6 +1159,33 @@ if current_step == "profile" or page == "Profile Settings":
             json.dump(user_data, f)
         st.success("Profile saved!")
         st.rerun()
+
+    st.divider()
+    st.subheader("⚠️ Danger Zone")
+    if 'confirm_reset' not in st.session_state:
+        st.session_state.confirm_reset = False
+
+    if st.button("Reset All Progress", type="primary"):
+        st.session_state.confirm_reset = True
+
+    if st.session_state.confirm_reset:
+        st.warning("Are you sure? This will delete your weight history, workout logs, and streak. This action cannot be undone.")
+        c1, c2, c3 = st.columns([1,1,2])
+        if c1.button("Yes, Reset Now", use_container_width=True):
+            default_data["history"] = []
+            default_data["workout_log"] = []
+            default_data["chat_log"] = []
+            default_data["streak"] = 1
+            default_data["clarification_answers"] = {}
+            default_data["calorie_offset"] = 0
+            with open(USER_DATA_FILE, "w") as f:
+                json.dump(default_data, f)
+            st.session_state.confirm_reset = False
+            st.success("Progress has been reset.")
+            st.rerun()
+        if c2.button("Cancel", use_container_width=True):
+            st.session_state.confirm_reset = False
+            st.rerun()
 
 elif current_step == "clarification":
     st.header("Step 3: AI Clarifying Questions")
@@ -1273,7 +1329,13 @@ elif page == "Dashboard":
 
         if default_data["history"]:
             df = pd.DataFrame(default_data["history"])
-            st.line_chart(df.set_index("date")["weight"])
+            df['date'] = pd.to_datetime(df['date'])
+            df = df.set_index("date")
+            
+            target_weight = default_data.get("target_weight", 0.0)
+            if target_weight > 0:
+                df['Goal'] = target_weight
+            st.line_chart(df[["weight", "Goal"] if 'Goal' in df else "weight"])
         else:
             st.info("Save your profile to start tracking progress!")
 
@@ -1552,8 +1614,9 @@ elif page == "AI Chat Help":
         with st.chat_message("assistant", avatar="🤖"):
             with st.status("Thinking...", expanded=True) as status:
                 time.sleep(0.5)
+                ai_speed = st.session_state.get("ai_speed", 0.03)
                 answer = get_smart_response(prompt, default_data)
                 status.update(label="Response Ready", state="complete", expanded=False)
-            st.write_stream(stream_response(answer))
+            st.write_stream(stream_response(answer, speed=ai_speed))
         # Add assistant response to chat history
         st.session_state.messages.append({"role": "assistant", "content": answer})
