@@ -526,7 +526,7 @@ def display_countdown_timer():
         timer_placeholder.metric("⏳ Time Remaining", f"{int(mins):02d}:{int(secs):02d}")
 
 # ---------------- New Features ----------------
-def adjust_calories_for_goal(tdee, goal):
+def adjust_calories_for_goal(tdee, goal, offset=0):
     adjustments = {
         "Weight Loss": -500,
         "Fat Loss": -500,
@@ -535,7 +535,7 @@ def adjust_calories_for_goal(tdee, goal):
         "Stay Fit": 0
     }
     adjustment = adjustments.get(goal, 0)
-    return tdee + adjustment, adjustment
+    return tdee + adjustment + offset, adjustment + offset
 
 def calculate_calories(weight, height, age, gender, activity_level):
     # Mifflin-St Jeor Equation
@@ -588,11 +588,12 @@ def generate_fitness_plan_text(user_data):
     gender = user_data.get("gender", "Male")
     activity = user_data.get("activity_level", "Sedentary")
     diet_type = user_data.get("diet_preference", "Veg")
+    offset = user_data.get("calorie_offset", 0)
     
     bmi = calculate_bmi(weight, height)
     bmi_cat = bmi_category(bmi)
     tdee = calculate_calories(weight, height, age, gender, activity)
-    target, _ = adjust_calories_for_goal(tdee, goal)
+    target, _ = adjust_calories_for_goal(tdee, goal, offset)
     macros = calculate_macros(target, goal)
     
     plan_text = f"""FITNESS PLAN FOR {name.upper()}
@@ -686,6 +687,14 @@ QA_DATA = {
     "Should I rest after workout?": "Yes, rest is necessary for recovery.",
     "Can I eat before workout?": "Yes, eat a light snack.",
     "Is late night snacking bad?": "Yes, it may lead to weight gain."
+}
+
+CLARIFICATION_QUESTIONS = {
+    "Weight Loss": ["How many days a week can you workout?", "Do you have any injuries?", "Do you prefer home or gym workouts?"],
+    "Fat Loss": ["How many days a week can you workout?", "Do you have any injuries?", "Do you prefer home or gym workouts?"],
+    "Muscle Gain": ["Do you have access to a gym?", "Are you taking any supplements?", "How many hours of sleep do you get?"],
+    "Increase Stamina": ["Do you enjoy running?", "Do you have access to a swimming pool?", "Any joint pain?"],
+    "Stay Fit": ["How active are you currently?", "Do you prefer yoga or cardio?", "How is your sleep quality?"]
 }
 
 def get_smart_response(question, user_data):
@@ -958,8 +967,9 @@ default_data = {
     "name": "", "age": 25, "gender": "Male", 
     "height": 170.0, "weight": 60.0, "goal": "Stay Fit", "activity_level": "Sedentary",
     "history": [], "workout_log": [], "streak": 0, "last_visit": "",
-    "schedule": {"Monday": "", "Tuesday": "", "Wednesday": "", "Thursday": "", "Friday": "", "Saturday": "", "Sunday": ""},
-    "diet_preference": "Veg", "dietary_restrictions": [], "chat_log": []
+    "schedule": {},
+    "diet_preference": "Veg", "dietary_restrictions": [], "chat_log": [],
+    "clarification_answers": {}, "calorie_offset": 0
 }
 
 if os.path.exists(USER_DATA_FILE):
@@ -1003,6 +1013,24 @@ if height_cm > 0 and weight > 0:
     bmi = calculate_bmi(weight, height_cm)
     category = bmi_category(bmi)
 
+# ---------------- Flow Logic ----------------
+def is_checkin_due(history):
+    if not history:
+        return False
+    last_date = datetime.date.fromisoformat(history[-1]["date"])
+    return (datetime.date.today() - last_date).days >= 7
+
+# Determine current step
+current_step = "dashboard"
+if not name or weight == 0:
+    current_step = "profile" # Step 1 & 2
+elif not default_data.get("clarification_answers"):
+    current_step = "clarification" # Step 3
+elif is_checkin_due(default_data["history"]):
+    current_step = "checkin" # Step 5
+elif st.session_state.get("trigger_adjustment", False):
+    current_step = "adjustment" # Step 6
+
 # ---------------- Sidebar ----------------
 with st.sidebar:
     st.write(f"Logged in as: **{st.session_state.username}**")
@@ -1012,16 +1040,21 @@ with st.sidebar:
         st.rerun()
     
     st.divider()
-    with st.expander("📧 Notification Settings"):
-        st.caption("Enter your email to receive workout updates.")
-        st.session_state.receiver_email = st.text_input("Receiver Email", value=st.session_state.get("receiver_email", ""))
-    st.divider()
-
-    page = st.radio("Navigate", ["Input Form", "Dashboard", "Workout Routine", "Nutrition Plan", "AI Chat Help"])
+    
+    if current_step == "dashboard":
+        with st.expander("📧 Notification Settings"):
+            st.caption("Enter your email to receive workout updates.")
+            st.session_state.receiver_email = st.text_input("Receiver Email", value=st.session_state.get("receiver_email", ""))
+        st.divider()
+        page = st.radio("Navigate", ["Dashboard", "Workout Routine", "Nutrition Plan", "AI Chat Help", "Profile Settings"])
+    else:
+        st.info("Please complete the current step to access the dashboard.")
+        page = "Flow" # Placeholder
 
 # ---------------- Main Content ----------------
-if page == "Input Form":
-    st.header("Edit Profile")
+if current_step == "profile" or page == "Profile Settings":
+    st.header("Step 1 & 2: Profile Creation & Goal Detection")
+    st.info("Let's build your profile to generate the perfect plan.")
     
     new_name = st.text_input("Name", value=name)
     if new_name and not re.match(r"^[A-Za-z ]+$", new_name):
@@ -1033,6 +1066,7 @@ if page == "Input Form":
     gender_index = 0 if gender == "Male" else 1
     new_gender = st.radio("Gender", ["Male", "Female"], index=gender_index, horizontal=True)
 
+    st.subheader("Step 2: Goal Detection")
     goal_options = ["Weight Loss", "Muscle Gain", "Stay Fit", "Fat Loss", "Increase Stamina"]
     try:
         goal_index = goal_options.index(goal)
@@ -1061,7 +1095,7 @@ if page == "Input Form":
         with open(profile_pic, "wb") as f:
             f.write(uploaded_pic.getbuffer())
 
-    if st.button("Save Profile"):
+    if st.button("Save Profile & Continue"):
         new_history_entry = {"date": today_str, "weight": new_weight, "bmi": calculate_bmi(new_weight, new_height)}
         if not default_data["history"] or default_data["history"][-1]["date"] != today_str:
             default_data["history"].append(new_history_entry)
@@ -1074,14 +1108,103 @@ if page == "Input Form":
             "history": default_data["history"], "streak": default_data["streak"], "last_visit": today_str,
             "schedule": default_data.get("schedule", {}),
             "workout_log": default_data.get("workout_log", []),
-            "profile_pic": profile_pic
+            "profile_pic": profile_pic,
+            "clarification_answers": default_data.get("clarification_answers", {}),
+            "calorie_offset": default_data.get("calorie_offset", 0)
         }
         with open(USER_DATA_FILE, "w") as f:
             json.dump(user_data, f)
         st.success("Profile saved!")
         st.rerun()
 
+elif current_step == "clarification":
+    st.header("Step 3: AI Clarifying Questions")
+    st.write(f"To tailor the plan for **{goal}**, I need a few more details.")
+    
+    questions = CLARIFICATION_QUESTIONS.get(goal, CLARIFICATION_QUESTIONS["Stay Fit"])
+    answers = {}
+    
+    with st.form("clarification_form"):
+        for q in questions:
+            answers[q] = st.text_input(q)
+        
+        if st.form_submit_button("Generate Plan"):
+            default_data["clarification_answers"] = answers
+            with open(USER_DATA_FILE, "w") as f:
+                json.dump(default_data, f)
+            st.success("Answers saved! Generating your plan...")
+            time.sleep(1)
+            st.rerun()
+
+elif current_step == "checkin":
+    st.header("Step 5: Weekly Check-in")
+    st.info("It's been a week! Let's see how you are progressing.")
+    
+    checkin_weight = st.number_input("Current Weight (kg)", min_value=10.0, max_value=500.0, value=weight)
+    
+    if st.button("Submit Check-in"):
+        # Calculate progress
+        prev_weight = default_data["history"][-1]["weight"]
+        diff = checkin_weight - prev_weight
+        
+        # Save history
+        new_entry = {"date": today_str, "weight": checkin_weight, "bmi": calculate_bmi(checkin_weight, height_cm)}
+        default_data["history"].append(new_entry)
+        default_data["weight"] = checkin_weight
+        
+        # Logic for Step 6: Plan Adjustment
+        # If goal is Weight Loss and weight increased or stayed same (diff >= 0)
+        if goal in ["Weight Loss", "Fat Loss"] and diff >= -0.1:
+            st.session_state.trigger_adjustment = True
+            st.warning("Progress seems slower than expected.")
+        # If goal is Muscle Gain and weight decreased (diff < 0)
+        elif goal == "Muscle Gain" and diff < 0:
+            st.session_state.trigger_adjustment = True
+            st.warning("You seem to be losing weight instead of gaining.")
+        else:
+            st.success("Great progress! Keep it up.")
+            st.session_state.trigger_adjustment = False
+        
+        with open(USER_DATA_FILE, "w") as f:
+            json.dump(default_data, f)
+        
+        time.sleep(1.5)
+        st.rerun()
+
+elif current_step == "adjustment":
+    st.header("Step 6: Plan Adjustment")
+    st.write("Based on your check-in, let's tweak your plan.")
+    
+    current_offset = default_data.get("calorie_offset", 0)
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        st.metric("Current Calorie Offset", f"{current_offset} kcal")
+    
+    rec_action = "Maintain"
+    if goal in ["Weight Loss", "Fat Loss"]:
+        rec_action = "Decrease Calories"
+        st.info("Recommendation: Decrease daily intake by 100-200 kcal to break the plateau.")
+    elif goal == "Muscle Gain":
+        rec_action = "Increase Calories"
+        st.info("Recommendation: Increase daily intake by 200 kcal to support muscle growth.")
+        
+    adjustment_choice = st.radio("Choose Action:", ["Keep Current Plan", "Decrease Calories (-100)", "Increase Calories (+100)"])
+    
+    if st.button("Apply Adjustment"):
+        if "Decrease" in adjustment_choice:
+            default_data["calorie_offset"] = current_offset - 100
+        elif "Increase" in adjustment_choice:
+            default_data["calorie_offset"] = current_offset + 100
+        
+        st.session_state.trigger_adjustment = False
+        with open(USER_DATA_FILE, "w") as f:
+            json.dump(default_data, f)
+        st.success("Plan updated!")
+        st.rerun()
+
 elif page == "Dashboard":
+    st.header("Step 4: Plan Generation & Dashboard")
     if name and height_cm > 0 and weight > 0:
         st.header(f"Hello, {name}!")
         
@@ -1098,8 +1221,9 @@ elif page == "Dashboard":
             bmr_val = (10 * weight) + (6.25 * height_cm) - (5 * age) - 161
         
         activity_lvl = default_data.get("activity_level", "Sedentary")
+        offset = default_data.get("calorie_offset", 0)
         tdee_val = calculate_calories(weight, height_cm, age, gender, activity_lvl)
-        target_val, _ = adjust_calories_for_goal(tdee_val, goal)
+        target_val, _ = adjust_calories_for_goal(tdee_val, goal, offset)
 
         col1, col2, col3 = st.columns(3)
         col1.metric("BMI", f"{bmi:.2f}", category)
@@ -1107,7 +1231,7 @@ elif page == "Dashboard":
         col3.metric("TDEE", f"{tdee_val} kcal")
 
         col4, col5, col6 = st.columns(3)
-        col4.metric("Target Calories", f"{target_val} kcal", goal)
+        col4.metric("Target Calories", f"{target_val} kcal", f"Offset: {offset}")
         col5.metric("Current Weight", f"{weight} kg")
         col6.metric("Streak", f"{default_data['streak']} Days")
 
@@ -1131,25 +1255,7 @@ elif page == "Dashboard":
         # Progress Graph
         st.subheader("Weight Progress")
         
-        with st.expander("⚖️ Weekly Check-in: Update Weight"):
-            checkin_weight = st.number_input("Current Weight (kg)", min_value=10.0, max_value=500.0, value=weight, key="checkin_w")
-            if st.button("Update Weight"):
-                new_bmi = calculate_bmi(checkin_weight, height_cm)
-                new_entry = {"date": today_str, "weight": checkin_weight, "bmi": new_bmi}
-                
-                if not default_data["history"]:
-                    default_data["history"].append(new_entry)
-                elif default_data["history"][-1]["date"] == today_str:
-                    default_data["history"][-1] = new_entry
-                else:
-                    default_data["history"].append(new_entry)
-                
-                default_data["weight"] = checkin_weight
-                with open(USER_DATA_FILE, "w") as f:
-                    json.dump(default_data, f)
-                st.toast("Weight updated successfully!")
-                time.sleep(1)
-                st.rerun()
+        # (Check-in logic moved to Step 5)
 
         if default_data["history"]:
             df = pd.DataFrame(default_data["history"])
@@ -1268,12 +1374,13 @@ elif page == "Nutrition Plan":
             ])
             tdee = calculate_calories(weight, height_cm, age, gender, activity)
             st.info(f"Your estimated daily maintenance calories (TDEE): **{tdee} kcal**")
+            
+            offset = default_data.get("calorie_offset", 0)
+            goal_calories, adjustment = adjust_calories_for_goal(tdee, goal, offset)
 
-            goal_calories, adjustment = adjust_calories_for_goal(tdee, goal)
-
-            if adjustment > 0:
+            if adjustment + offset > 0:
                 st.success(f"For your goal of **{goal}**, you should aim for a caloric surplus. We suggest adding **{adjustment} kcal**.")
-            elif adjustment < 0:
+            elif adjustment + offset < 0:
                 st.warning(f"For your goal of **{goal}**, you should aim for a caloric deficit. We suggest subtracting **{-adjustment} kcal**.")
             
             st.metric(label=f"Your Daily Goal for {goal}", value=f"{goal_calories} kcal")
