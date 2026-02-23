@@ -488,6 +488,7 @@ def display_countdown_timer():
     seconds = st.number_input(
         "Set timer (seconds):",
         min_value=1,
+        max_value=3600,
         value=st.session_state.countdown_seconds,
         disabled=st.session_state.timer_running
     )
@@ -1364,9 +1365,9 @@ elif page == "Workout Routine":
                 c1, c2 = st.columns(2)
                 with c1:
                     w_type = st.selectbox("Activity Type", ["Gym", "Yoga", "Cardio", "Sports", "Home Workout"])
-                    w_duration = st.number_input("Duration (mins)", min_value=5, value=45, step=5)
+                    w_duration = st.number_input("Duration (mins)", min_value=5, max_value=300, value=45, step=5)
                 with c2:
-                    w_cal = st.number_input("Calories Burned (approx)", min_value=0, value=200, step=10)
+                    w_cal = st.number_input("Calories Burned (approx)", min_value=0, max_value=5000, value=200, step=10)
                     w_date = st.date_input("Date", datetime.date.today())
                 
                 w_notes = st.text_area("Notes (e.g., 'Hit a PR on bench press')")
