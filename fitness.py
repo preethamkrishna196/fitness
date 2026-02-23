@@ -1400,24 +1400,28 @@ elif page == "Dashboard":
             
         # Step Tracker
         st.subheader("👣 Step Tracker")
-        s_col1, s_col2 = st.columns([1, 3])
-        with s_col1:
-            steps_to_add = st.number_input("Add Steps", min_value=0, max_value=20000, step=100, key="steps_input")
-            if st.button("Log Steps"):
-                default_data["daily_steps"] = default_data.get("daily_steps", 0) + steps_to_add
+        with st.expander("Log a Walk or Run"):
+            walk_duration = st.number_input("Duration (minutes)", min_value=1, max_value=240, value=15, step=5)
+            # Average steps per minute can vary. 100 is a brisk walk.
+            estimated_steps = walk_duration * 100
+            st.info(f"This will add an estimated **{estimated_steps}** steps to your daily total.")
+            
+            if st.button("Log Walk/Run Activity"):
+                default_data["daily_steps"] = default_data.get("daily_steps", 0) + estimated_steps
                 with open(USER_DATA_FILE, "w") as f:
                     json.dump(default_data, f)
+                st.success(f"Logged {estimated_steps} steps! Keep it up!")
                 st.rerun()
-        with s_col2:
-            curr_steps = default_data.get("daily_steps", 0)
-            goal_steps = default_data.get("steps_goal", 10000)
-            st.metric("Steps Today", f"{curr_steps} / {goal_steps}")
-            st.progress(min(curr_steps / goal_steps, 1.0))
-            if curr_steps >= goal_steps:
-                st.success("🎉 Goal Reached! You're walking on sunshine!")
-                if not st.session_state.get(f"steps_reward_{today_str}", False):
-                    st.balloons()
-                    st.session_state[f"steps_reward_{today_str}"] = True
+
+        curr_steps = default_data.get("daily_steps", 0)
+        goal_steps = default_data.get("steps_goal", 10000)
+        st.metric("Steps Today", f"{curr_steps} / {goal_steps}")
+        st.progress(min(curr_steps / goal_steps, 1.0))
+        if curr_steps >= goal_steps:
+            st.success("🎉 Goal Reached! You're walking on sunshine!")
+            if not st.session_state.get(f"steps_reward_{today_str}", False):
+                st.balloons()
+                st.session_state[f"steps_reward_{today_str}"] = True
 
     else:
         st.info("👉 Please go to **Input Form** to fill your details.")
