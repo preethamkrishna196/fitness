@@ -1130,6 +1130,30 @@ with st.sidebar:
             st.session_state.receiver_email = st.text_input("Receiver Email", value=st.session_state.get("receiver_email", ""))
         with st.expander("⚙️ AI Chat Settings"):
             st.session_state.ai_speed = st.slider("AI Typing Speed", min_value=0.0, max_value=0.1, value=st.session_state.get("ai_speed", 0.03), step=0.01, format="%.2fs/word")
+        
+        with st.expander("🔋 Background & Permissions"):
+            st.caption("Enable this to keep the app running for constant tracking.")
+            
+            # Wake Lock to prevent sleep (Simulates background run by keeping app active)
+            if st.checkbox("Run in Background (Keep Screen On)", help="Prevents the screen from sleeping so timers and step tracking continue."):
+                st.markdown(
+                    """
+                    <script>
+                    async function requestWakeLock() {
+                        try {
+                            const wakeLock = await navigator.wakeLock.request('screen');
+                            console.log('Wake Lock active');
+                        } catch (err) {
+                            console.error(`${err.name}, ${err.message}`);
+                        }
+                    }
+                    requestWakeLock();
+                    </script>
+                    """,
+                    unsafe_allow_html=True
+                )
+                st.toast("Background Mode Active: Screen will stay awake.")
+
         st.divider()
         page = st.radio("Navigate", ["Dashboard", "Workout Routine", "Nutrition Plan", "AI Chat Help", "Profile Settings"])
     else:
