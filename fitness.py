@@ -854,6 +854,7 @@ def login_page():
         with tab2:
             st.subheader("Create Account")
             new_user = st.text_input("New Username", key="signup_user")
+            new_email = st.text_input("Email Address", key="signup_email")
             new_password = st.text_input("New Password", type='password', key="signup_pass")
             if new_password:
                 strength, message, color = check_password_strength(new_password)
@@ -873,7 +874,7 @@ def login_page():
             sec_a = st.text_input("Security Answer", key="signup_sec_a")
 
             if st.button("Sign Up", use_container_width=True):
-                if not new_user or not new_password or not sec_a:
+                if not new_user or not new_password or not sec_a or not new_email:
                     st.error("Please fill in all fields.")
                 else:
                     if not os.path.exists("users.json"):
@@ -886,6 +887,7 @@ def login_page():
                     else:
                         users[new_user] = {
                             "password": make_hashes(new_password),
+                            "email": new_email,
                             "question": sec_q,
                             "answer": make_hashes(sec_a)
                         }
@@ -962,36 +964,74 @@ def login_page():
 
         with tab3:
             st.subheader("Reset Password")
-            reset_username = st.text_input("Enter Username", key="reset_username")
+            reset_method = st.radio("Reset Method", ["Security Question", "Email OTP"], horizontal=True)
             
-            if reset_username:
-                if os.path.exists("users.json"):
-                    with open("users.json", "r") as f:
-                        users = json.load(f)
-                    
-                    if reset_username in users:
-                        user_data = users[reset_username]
-                        # Check if user has security question set up
-                        if isinstance(user_data, dict) and "question" in user_data:
-                            st.info(f"Security Question: **{user_data['question']}**")
-                            reset_answer = st.text_input("Your Answer", key="reset_answer")
-                            new_reset_pass = st.text_input("New Password", type="password", key="new_reset_pass")
-                            
-                            if st.button("Reset Password", key="btn_reset", use_container_width=True):
-                                if check_hashes(reset_answer, user_data['answer']):
-                                    user_data['password'] = make_hashes(new_reset_pass)
-                                    users[reset_username] = user_data
-                                    with open("users.json", "w") as f:
-                                        json.dump(users, f)
-                                    st.success("Password updated successfully! Please login.")
-                                else:
-                                    st.error("Incorrect security answer.")
+            if reset_method == "Security Question":
+                reset_username = st.text_input("Enter Username", key="reset_username")
+                
+                if reset_username:
+                    if os.path.exists("users.json"):
+                        with open("users.json", "r") as f:
+                            users = json.load(f)
+                        
+                        if reset_username in users:
+                            user_data = users[reset_username]
+                            # Check if user has security question set up
+                            if isinstance(user_data, dict) and "question" in user_data:
+                                st.info(f"Security Question: **{user_data['question']}**")
+                                reset_answer = st.text_input("Your Answer", key="reset_answer")
+                                new_reset_pass = st.text_input("New Password", type="password", key="new_reset_pass")
+                                
+                                if st.button("Reset Password", key="btn_reset", use_container_width=True):
+                                    if check_hashes(reset_answer, user_data['answer']):
+                                        user_data['password'] = make_hashes(new_reset_pass)
+                                        users[reset_username] = user_data
+                                        with open("users.json", "w") as f:
+                                            json.dump(users, f)
+                                        st.success("Password updated successfully! Please login.")
+                                    else:
+                                        st.error("Incorrect security answer.")
+                            else:
+                                st.warning("This account is not set up for password recovery.")
                         else:
-                            st.warning("This account is not set up for password recovery.")
+                            st.error("Username not found.")
                     else:
-                        st.error("Username not found.")
-                else:
-                    st.error("No users found.")
+                        st.error("No users found.")
+            
+            else:
+                reset_user_otp = st.text_input("Enter Username", key="reset_user_otp")
+                if st.button("Send OTP Code"):
+                    if os.path.exists("users.json"):
+                        with open("users.json", "r") as f:
+                            users = json.load(f)
+                        if reset_user_otp in users and "email" in users[reset_user_otp]:
+                            email = users[reset_user_otp]["email"]
+                            code = str(random.randint(100000, 999999))
+                            st.session_state.reset_code = code
+                            st.session_state.reset_user = reset_user_otp
+                            success, msg = send_email_notification(SYSTEM_EMAIL, SYSTEM_PASSWORD, email, "Password Reset Code", f"Your code is: {code}")
+                            if success:
+                                st.success(f"OTP sent to {email}")
+                                st.session_state.otp_sent = True
+                            else:
+                                st.error(msg)
+                        else:
+                            st.error("User not found or no email linked.")
+                
+                if st.session_state.get("otp_sent"):
+                    otp_val = st.text_input("Enter OTP", key="otp_val")
+                    new_pass_otp = st.text_input("New Password", type="password", key="new_pass_otp")
+                    if st.button("Change Password", key="btn_change_otp"):
+                        if otp_val == st.session_state.get("reset_code"):
+                            with open("users.json", "r") as f:
+                                users = json.load(f)
+                            users[st.session_state.reset_user]["password"] = make_hashes(new_pass_otp)
+                            with open("users.json", "w") as f:
+                                json.dump(users, f)
+                            st.success("Password updated! Please login.")
+                            st.session_state.otp_sent = False
+                        else:
+                            st.error("Invalid OTP")
 
 if not st.session_state.logged_in:
     login_page()
@@ -1010,7 +1050,8 @@ default_data = {
     "history": [], "workout_log": [], "streak": 0, "last_visit": "",
     "schedule": {}, "target_weight": 0.0,
     "diet_preference": "Veg", "dietary_restrictions": [], "chat_log": [],
-    "clarification_answers": {}, "calorie_offset": 0
+    "clarification_answers": {}, "calorie_offset": 0,
+    "steps_goal": 10000, "daily_steps": 0
 }
 
 if os.path.exists(USER_DATA_FILE):
@@ -1037,6 +1078,7 @@ if default_data["last_visit"] != today_str:
                 default_data["streak"] = 1
             elif default_data["streak"] == 0:
                 default_data["streak"] = 1
+    default_data["daily_steps"] = 0
     default_data["last_visit"] = today_str
 
 # Extract variables
@@ -1120,6 +1162,7 @@ if current_step == "profile" or page == "Profile Settings":
     new_height = st.number_input("Height (cm)", min_value=50.0, max_value=300.0, value=max(50.0, min(height_cm, 300.0)))
     new_weight = st.number_input("Weight (kg)", min_value=10.0, max_value=500.0, value=max(10.0, min(weight, 500.0)))
     new_target_weight = st.number_input("Target Weight (kg)", min_value=0.0, max_value=500.0, value=default_data.get("target_weight", 0.0), help="Set to 0 to disable goal line on chart.")
+    new_steps_goal = st.number_input("Daily Step Goal", min_value=1000, max_value=50000, value=default_data.get("steps_goal", 10000), step=500)
 
     activity_options = ["Sedentary", "Lightly Active", "Moderately Active", "Very Active"]
     current_activity = default_data.get("activity_level", "Sedentary")
@@ -1154,7 +1197,9 @@ if current_step == "profile" or page == "Profile Settings":
             "workout_log": default_data.get("workout_log", []),
             "profile_pic": profile_pic,
             "clarification_answers": default_data.get("clarification_answers", {}),
-            "calorie_offset": default_data.get("calorie_offset", 0)
+            "calorie_offset": default_data.get("calorie_offset", 0),
+            "steps_goal": new_steps_goal,
+            "daily_steps": default_data.get("daily_steps", 0)
         }
         with open(USER_DATA_FILE, "w") as f:
             json.dump(user_data, f)
@@ -1352,6 +1397,28 @@ elif page == "Dashboard":
         with w_col2:
             st.write(f"**Glasses today:** {st.session_state.water_count} / 8")
             st.progress(min(st.session_state.water_count / 8, 1.0))
+            
+        # Step Tracker
+        st.subheader("👣 Step Tracker")
+        s_col1, s_col2 = st.columns([1, 3])
+        with s_col1:
+            steps_to_add = st.number_input("Add Steps", min_value=0, max_value=20000, step=100, key="steps_input")
+            if st.button("Log Steps"):
+                default_data["daily_steps"] = default_data.get("daily_steps", 0) + steps_to_add
+                with open(USER_DATA_FILE, "w") as f:
+                    json.dump(default_data, f)
+                st.rerun()
+        with s_col2:
+            curr_steps = default_data.get("daily_steps", 0)
+            goal_steps = default_data.get("steps_goal", 10000)
+            st.metric("Steps Today", f"{curr_steps} / {goal_steps}")
+            st.progress(min(curr_steps / goal_steps, 1.0))
+            if curr_steps >= goal_steps:
+                st.success("🎉 Goal Reached! You're walking on sunshine!")
+                if not st.session_state.get(f"steps_reward_{today_str}", False):
+                    st.balloons()
+                    st.session_state[f"steps_reward_{today_str}"] = True
+
     else:
         st.info("👉 Please go to **Input Form** to fill your details.")
 
@@ -1359,6 +1426,28 @@ elif page == "Workout Routine":
     if name and height_cm > 0 and weight > 0:
         st.header("Workout Recommendations")
         
+        # ---------------- Workout of the Day ----------------
+        st.subheader("🎲 Random Workout of the Day")
+        if st.button("Generate New WOD", help="Get a random workout suggestion"):
+            lvl = random.choice(list(WORKOUT_DB.keys()))
+            mg = random.choice(list(WORKOUT_DB[lvl].keys()))
+            st.session_state.wod = (lvl, mg)
+        
+        if "wod" in st.session_state:
+            lvl, mg = st.session_state.wod
+            st.info(f"**Today's Challenge:** {lvl.capitalize()} - {mg}")
+            for ex in WORKOUT_DB[lvl][mg]:
+                col1, col2 = st.columns([1, 3])
+                with col1:
+                    st.image(ex["img"], use_column_width=True)
+                with col2:
+                    st.write(f"**{ex['name']}**")
+                    if "duration" in ex:
+                        st.write(f"Duration: {ex['duration']}")
+                    else:
+                        st.write(f"{ex['sets']} sets x {ex['reps']} reps")
+            st.divider()
+
         # Log Workout Section
         with st.expander("📝 Log Completed Workout", expanded=True):
             with st.form("log_workout_form"):
